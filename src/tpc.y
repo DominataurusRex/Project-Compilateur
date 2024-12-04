@@ -1,3 +1,29 @@
+%{
+/* exp.y */
+/* Syntaxe des expressions en TPC */
+#include <stdio.h>
+int yylex();
+void yyerror(char *);
+%}
+
+%union {
+    char byte;
+    int num;
+    char ident[64];
+    char comp[3];
+    char type[4];
+    char key[6];
+}
+
+%token <byte> CHARACTER ADDSUB DIVSTAR
+%token <num> NUM
+%token <ident> IDENT
+%token <type> TYPE
+%token <comp> ORDER EQ
+%token OR
+%token AND
+
+
 %%
 Prog:  DeclVars DeclFoncts
     ;
