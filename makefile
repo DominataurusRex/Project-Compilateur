@@ -1,30 +1,33 @@
-EXEC=exp-tpc
-PARSER=exp-tpc
-LEXER=exp-tpc
+CC = gcc
+CFLAGS = -Wall -g -Iobj -Isrc
+PARSER = tpc
+LEXER = tpc_lex
 
-# Compilation toto
-$(EXEC): $(PARSER).o lex.yy.o
-	gcc $(PARSER).o lex.yy.o -o $(EXEC) -lfl
+bin/tpcas: obj/$(LEXER).o obj/$(PARSER).o obj/tree.o # ...
+	$(CC) -o $@ $^
 
+obj/tree.o: src/tree.c src/tree.h
+	$(CC) -c -o $@ $< $(CFLAGS)
 
-lex.yy.o: lex.yy.c
-	gcc -Wall -std=c17 -pedantic -c -ly lex.yy.c -o lex.yy.o -lfl
+obj/$(PARSER).o: obj/$(PARSER).tab.c src/tree.h
+	$(CC) -c -o $@ $< $(CFLAGS)
 
+obj/$(LEXER).o: obj/$(LEXER).c obj/$(PARSER).tab.h
+	$(CC) -c -o $@ $< $(CFLAGS)
+# ...
 
-lex.yy.c: $(LEXER).lex
-	flex $(LEXER).lex
+obj/%.o: src/%.c
+	$(CC) -c -o $@ $< $(CFLAGS)
 
+obj/$(LEXER).c: src/$(LEXER).lex obj/$(PARSER).tab.h
+	flex -o $@ $<
 
-# Compilation Bison
-$(PARSER).o: $(PARSER).tab.c
-	gcc -Wall -std=c17 -pedantic -c -ly $(PARSER).tab.c -o $(PARSER).o
-
-
-$(PARSER).tab.c $(PARSER).tab.h: $(PARSER).y
-	bison -d $(PARSER).y
-
+obj/$(PARSER).tab.c obj/$(PARSER).tab.h &: src/$(PARSER).y
+	bison -d -o obj/$(PARSER).tab.c $<
 
 clean:
-	rm -f lex.yy.*
-	rm -f $(PARSER).tab.*
-	rm -f parser.o
+	rm obj/*
+
+cleanall:
+	make clean
+	rm bin/tpcas

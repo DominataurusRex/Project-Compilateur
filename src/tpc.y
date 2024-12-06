@@ -4,6 +4,7 @@
 #include <stdio.h>
 int yylex();
 void yyerror(char *);
+int yywrap();
 %}
 
 %union {
@@ -22,6 +23,14 @@ void yyerror(char *);
 %token <comp> ORDER EQ
 %token OR
 %token AND
+%token WHILE
+%token IF
+%token ELSE
+%token RETURN
+%token VOID
+%token STATIC
+
+
 
 
 %%
@@ -106,3 +115,16 @@ ListExp:
     |  Exp
     ;
 %%
+
+void yyerror(char* msg) {
+    fprintf(stderr, "Error - %s\n", msg);
+}
+
+int yywrap(){ 
+    return 1;
+}
+
+int main(int argc, char **argv) {
+  printf("%d \n", yyparse());
+  return 0;
+}
