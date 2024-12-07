@@ -3,7 +3,7 @@ CFLAGS = -Wall -g -Iobj -Isrc
 PARSER = tpc
 LEXER = tpc_lex
 
-bin/tpcas: obj/$(LEXER).o obj/$(PARSER).o obj/tree.o # ...
+bin/tpcas: obj/$(LEXER).o obj/$(PARSER).o obj/tree.o
 	mkdir bin -p
 	$(CC) -o $@ $^
 
@@ -15,7 +15,6 @@ obj/$(PARSER).o: obj/$(PARSER).tab.c src/tree.h
 
 obj/$(LEXER).o: obj/$(LEXER).c obj/$(PARSER).tab.h
 	$(CC) -c -o $@ $< $(CFLAGS)
-# ...
 
 obj/%.o: src/%.c
 	$(CC) -c -o $@ $< $(CFLAGS)
@@ -33,3 +32,25 @@ clean:
 cleanall:
 	make clean
 	rm bin -rf
+
+
+testG:
+	@for file in test/good/*; do \
+		echo "Traitement $$file"; \
+		./bin/tpcas < "$$file"; \
+	done
+
+
+testB:
+	@for file in test/syn-err/*; do \
+		echo "Traitement $$file"; \
+		./bin/tpcas < "$$file"; \
+	done
+
+
+# Temporaire necessite src/tpc_lex_temp.lex
+temp:
+	mkdir obj -p
+	mkdir bin -p
+	flex -o obj/lex_temp.c src/tpc_lex_temp.lex
+	gcc -std=c17 -pedantic -Wall -o bin/temp obj/lex_temp.c

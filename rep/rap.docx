@@ -1,0 +1,28 @@
+﻿HI !
+
+Good test:
+    - 00: Main vide avec aucun retour
+    - 01: Main basique en une ligne
+    - 02: Main basique sur plusieurs lignes
+    - 03: Main basique avec des commentaires basiques
+    - 04: Main basique avec des commentaires sur plusieurs lignes
+    - 05: Main basique avec un paramètre
+    - 06: Main basique avec plusieurs paramètres
+    - 07: Main avec declaration d'une variable
+    - 08: Main avec declaration de multiples variables sur une ligne
+    - 09: Main avec affectation d'une variable int
+    - 10: Main avec affectation d'une variable char
+    - 11: Main avec affectation d'une expression OR
+    - 12: Main avec affectation d'une expression AND
+    - 13: Main avec affectation d'une expression EQ
+    - 14: Main avec affectation d'une expression ORDER <
+    - 15: Main avec affectation d'une expression ORDER <=
+    - 16: Main avec affectation d'une expression ORDER >
+    - 17: Main avec affectation d'une expression ORDER >=
+    - 18: Main avec affectation d'une expression ADDSUB unaire
+    - 19: Main avec affectation d'une expression ADDSUB binaire
+    - 20: Main avec affectation d'une expression DIVSTAR
+
+
+Syn-err test:
+    - 01: Uniquement un commentaire

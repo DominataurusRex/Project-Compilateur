@@ -1,0 +1,5 @@
+char main(void) {
+    char a;
+    a = 'b';
+    return 0;
+}

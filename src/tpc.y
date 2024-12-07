@@ -3,8 +3,9 @@
 /* Syntaxe des expressions en TPC */
 #include <stdio.h>
 int yylex();
+int yylineno;                   /* Debug */
+char *yytext;                   /* Debug */
 void yyerror(char *);
-int yywrap();
 %}
 
 %union {
@@ -117,11 +118,7 @@ ListExp:
 %%
 
 void yyerror(char* msg) {
-    fprintf(stderr, "Error - %s\n", msg);
-}
-
-int yywrap(){ 
-    return 1;
+    fprintf(stderr, "Error - %s - line %d next to - %s -\n", msg, yylineno, yytext);
 }
 
 int main(int argc, char **argv) {
