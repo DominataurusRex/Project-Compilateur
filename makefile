@@ -4,6 +4,7 @@ PARSER = tpc
 LEXER = tpc_lex
 
 bin/tpcas: obj/$(LEXER).o obj/$(PARSER).o obj/tree.o # ...
+	mkdir bin -p
 	$(CC) -o $@ $^
 
 obj/tree.o: src/tree.c src/tree.h
@@ -23,11 +24,12 @@ obj/$(LEXER).c: src/$(LEXER).lex obj/$(PARSER).tab.h
 	flex -o $@ $<
 
 obj/$(PARSER).tab.c obj/$(PARSER).tab.h &: src/$(PARSER).y
+	mkdir obj -p
 	bison -d -o obj/$(PARSER).tab.c $<
 
 clean:
-	rm obj/*
+	rm obj -rf
 
 cleanall:
 	make clean
-	rm bin/tpcas
+	rm bin -rf
