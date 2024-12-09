@@ -22,11 +22,21 @@ Good test:
     - 18: Main avec affectation d'une expression ADDSUB unaire
     - 19: Main avec affectation d'une expression ADDSUB binaire
     - 20: Main avec affectation d'une expression DIVSTAR
-    - 21: Main avec instruction IF
+    - 21: Main avec instruction IF (simple)
     - 22: Main avec instruction IF ELSE
-    - 23: Main avec instruction WHILE
-
+    - 23: Main avec instruction WHILE (simple)
+    - 24: Main avec instruction WHILE (comparaison)
+    - 25: Main avec instruction IF (comparaison)
+    - 26: Main avec instruction IF imbriqués
+    - 27: Fonction sans paramètre
+    - 28: Fonction avec un paramètre
+    - 29: Fonction avec plusieurs paramètres
 
 Syn-err test:
     - 01: Uniquement un commentaire
     - 02: Pas de type de retour
+    - 21: Pas de parenthèse fermante après un IF
+    - 21: Pas de parenthèse fermante après un WHILE
+    - 21: Pas de ; après instruction
+    - 21: Pas de déclaration de variable
+    
