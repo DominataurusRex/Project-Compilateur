@@ -1,0 +1,8 @@
+int main(void){
+    int a = 3;
+    int i = 0;
+    while (i<=a){
+        i = i + 1;
+    }
+    return 0;
+}

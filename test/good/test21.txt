@@ -1,0 +1,7 @@
+int main(void){
+    int a = 0;
+    if ( a == 0 ) {
+        printf("coucou");
+    }
+    return 0;
+}

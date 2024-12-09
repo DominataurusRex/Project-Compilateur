@@ -3,8 +3,6 @@
 /* Syntaxe des expressions en TPC */
 #include <stdio.h>
 int yylex();
-int yylineno;                   /* Debug */
-char *yytext;                   /* Debug */
 void yyerror(char *);
 %}
 
@@ -32,17 +30,17 @@ void yyerror(char *);
 %token STATIC
 
 
-
-
 %%
 Prog:  DeclVars DeclFoncts
     ;
 DeclVars:
        DeclVars TYPE Declarateurs ';'
+    |  DeclVars TYPE Declarateurs '=' Exp ';'
     |
     ;
 Declarateurs:
        Declarateurs ',' IDENT
+    |  IDENT '=' Exp
     |  IDENT
     ;
 DeclFoncts:
@@ -118,10 +116,10 @@ ListExp:
 %%
 
 void yyerror(char* msg) {
-    fprintf(stderr, "Error - %s - line %d next to - %s -\n", msg, yylineno, yytext);
+    fprintf(stderr, "Error - %s\n", msg);
 }
 
 int main(int argc, char **argv) {
-  printf("%d \n", yyparse());
+  printf("%d\n", yyparse());
   return 0;
 }

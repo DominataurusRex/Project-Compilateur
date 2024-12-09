@@ -22,7 +22,11 @@ Good test:
     - 18: Main avec affectation d'une expression ADDSUB unaire
     - 19: Main avec affectation d'une expression ADDSUB binaire
     - 20: Main avec affectation d'une expression DIVSTAR
+    - 21: Main avec instruction IF
+    - 22: Main avec instruction IF ELSE
+    - 23: Main avec instruction WHILE
 
 
 Syn-err test:
     - 01: Uniquement un commentaire
+    - 02: Pas de type de retour

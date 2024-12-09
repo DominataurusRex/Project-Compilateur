@@ -11,6 +11,7 @@ int lineno;
 %option noinput
 %option noyywrap
 %option yylineno
+
 %x COMMENTAIRE
 %x TEXT
 %%
@@ -18,20 +19,21 @@ int lineno;
 "//".*
 "/*" BEGIN COMMENTAIRE;
 <COMMENTAIRE>"*/" BEGIN INITIAL;
+<COMMENTAIRE>.
 
 "'" BEGIN TEXT;
 <TEXT>"'" BEGIN INITIAL;
-<TEXT>[^"\""'"]|"\n"|"\t"|"\'"|"\\" 
+<TEXT>[^\']|"\n"|"\t"|"\'"|"\\" 
 
 void {strcpy(yylval.type, yytext); return VOID;}
 
 int|char {strcpy(yylval.type, yytext); return TYPE;}
 
-if {strcpy( yylval.key, yytext); return IF;}
+while/[ \n\t]*\( {strcpy( yylval.key, yytext); return WHILE;}
+
+if/[ \n\t]*\( {strcpy( yylval.key, yytext); return IF;}
 
 else {strcpy( yylval.key, yytext); return ELSE;}
-
-while {strcpy( yylval.key, yytext); return WHILE;}
 
 static {strcpy( yylval.key, yytext); return STATIC;}
 
@@ -39,13 +41,15 @@ return {return RETURN;}
 
 [a-zA-Z_][a-zA-Z0-9_]*/[ \n\t]*\( {strcpy(yylval.ident, yytext); return IDENT;}
 
-[-+] {yylval.byte = yytext[0]; return ADDSUB;}
+[a-zA-Z_][a-zA-Z0-9_]* {strcpy(yylval.ident, yytext); return IDENT;}
 
-[/*%] {yylval.byte = yytext[0]; return DIVSTAR;}
+\'[a-zA-Z0-9]\' {return CHARACTER;}
 
 [0-9]+ {return NUM;}
 
-[a-zA-Z_][a-zA-Z0-9_]* {strcpy(yylval.ident, yytext); return IDENT;}
+[-+] {yylval.byte = yytext[0]; return ADDSUB;}
+
+[/*%] {yylval.byte = yytext[0]; return DIVSTAR;}
 
 "&&" {strcpy(yylval.comp, yytext); return AND;} 
 
@@ -64,6 +68,8 @@ return {return RETURN;}
 ">=" {strcpy(yylval.comp, yytext); return ORDER;}
 
 [!(),;={}] {return yytext[0];}
+
+[ \t\r]+
 
 <*>\n
 <*>.
