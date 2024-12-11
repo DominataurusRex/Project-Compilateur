@@ -28,6 +28,7 @@ void yyerror(char *);
 %token RETURN
 %token VOID
 %token STATIC
+%precedence NOELSE
 
 
 %%
@@ -35,12 +36,10 @@ Prog:  DeclVarsExt DeclFoncts
     ;
 DeclVarsExt:
        DeclVarsExt TYPE Declarateurs ';'
-    |  DeclVarsExt TYPE Declarateurs '=' Exp ';'
     |
     ;
 Declarateurs:
        Declarateurs ',' IDENT
-    |  IDENT '=' Exp
     |  IDENT
     ;
 DeclFoncts:
@@ -66,9 +65,7 @@ Corps: '{' DeclVarsInt SuiteInstr '}'
     ;
 DeclVarsInt:
        DeclVarsInt TYPE Declarateurs ';'
-    |  DeclVarsInt TYPE Declarateurs '=' Exp ';'
     |  DeclVarsInt STATIC TYPE Declarateurs ';'
-    |  DeclVarsInt STATIC TYPE Declarateurs '=' Exp ';'
     |
     ;
 SuiteInstr:
@@ -77,7 +74,7 @@ SuiteInstr:
     ;
 Instr:
        IDENT '=' Exp ';'
-    |  IF '(' Exp ')' Instr
+    |  IF '(' Exp ')' Instr     %prec NOELSE
     |  IF '(' Exp ')' Instr ELSE Instr
     |  WHILE '(' Exp ')' Instr
     |  IDENT '(' Arguments  ')' ';'
@@ -128,6 +125,5 @@ void yyerror(char* msg) {
 
 int main(int argc, char **argv) {
   int value = yyparse();
-  printf("%d\n", value);
   return value;
 }

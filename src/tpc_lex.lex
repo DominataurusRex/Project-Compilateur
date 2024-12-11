@@ -49,7 +49,7 @@ return {return RETURN;}
 
 "||" {strcpy(yylval.comp, yytext); return OR;}
 
-== {strcpy(yylval.comp, yytext); return EQ;}
+"==" {strcpy(yylval.comp, yytext); return EQ;}
 
 "!=" {strcpy(yylval.comp, yytext); return EQ;}
 
@@ -61,11 +61,7 @@ return {return RETURN;}
 
 ">=" {strcpy(yylval.comp, yytext); return ORDER;}
 
-[!(),;={}] {return yytext[0];}
-
-[a-zA-Z_][a-zA-Z0-9_]* {strcpy(yylval.ident, yytext); return IDENT;}
-
-[ \t\r]+
+[ \t\r]+ ; 
 <*>\n               {lineno++;}
-<*>.                {return 1;}
+<*>.                {return yytext[0];}
 %%
