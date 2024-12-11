@@ -1,3 +1,3 @@
-int fonction(){
+int fonction(void){
     return 1;
 }

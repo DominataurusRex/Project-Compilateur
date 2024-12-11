@@ -31,11 +31,11 @@ void yyerror(char *);
 
 
 %%
-Prog:  DeclVars DeclFoncts
+Prog:  DeclVarsExt DeclFoncts
     ;
-DeclVars:
-       DeclVars TYPE Declarateurs ';'
-    |  DeclVars TYPE Declarateurs '=' Exp ';'
+DeclVarsExt:
+       DeclVarsExt TYPE Declarateurs ';'
+    |  DeclVarsExt TYPE Declarateurs '=' Exp ';'
     |
     ;
 Declarateurs:
@@ -57,13 +57,19 @@ EnTeteFonct:
 Parametres:
        VOID
     |  ListTypVar
-    |
     ;
 ListTypVar:
        ListTypVar ',' TYPE IDENT
     |  TYPE IDENT
     ;
-Corps: '{' DeclVars SuiteInstr '}'
+Corps: '{' DeclVarsInt SuiteInstr '}'
+    ;
+DeclVarsInt:
+       DeclVarsInt TYPE Declarateurs ';'
+    |  DeclVarsInt TYPE Declarateurs '=' Exp ';'
+    |  DeclVarsInt STATIC TYPE Declarateurs ';'
+    |  DeclVarsInt STATIC TYPE Declarateurs '=' Exp ';'
+    |
     ;
 SuiteInstr:
        SuiteInstr Instr
@@ -121,6 +127,7 @@ void yyerror(char* msg) {
 }
 
 int main(int argc, char **argv) {
-  printf("%d\n", yyparse());
-  return 0;
+  int value = yyparse();
+  printf("%d\n", value);
+  return value;
 }
