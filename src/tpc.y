@@ -7,27 +7,17 @@ void yyerror(char *);
 %}
 
 %union {
+    Node *node;
     char byte;
     int num;
     char ident[64];
-    char comp[3];
-    char type[4];
-    char key[6];
 }
-
+%token <node> Prog DeclVarsExt Declarateurs DeclFoncts DeclFonct EnTeteFonct Parametres ListTypVar
+%token <node> Corps DeclVarsInt SuiteInstr Instr Exp TB FB M E T F Arguments ListExp
 %token <byte> CHARACTER ADDSUB DIVSTAR
 %token <num> NUM
-%token <ident> IDENT
-%token <type> TYPE
-%token <comp> ORDER EQ
-%token OR
-%token AND
-%token WHILE
-%token IF
-%token ELSE
-%token RETURN
-%token VOID
-%token STATIC
+%token <ident> IDENT TYPE ORDER EQ
+%token OR AND WHILE IF ELSE RETURN VOID STATIC
 %precedence NOELSE
 
 
