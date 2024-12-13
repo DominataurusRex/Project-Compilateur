@@ -12,7 +12,6 @@ int lineno = 1;
 %option noyywrap
 
 %x COMMENTAIRE
-%x TEXT
 %%
 
 "//".*
@@ -21,45 +20,41 @@ int lineno = 1;
 <COMMENTAIRE>"*/" BEGIN INITIAL;
 <COMMENTAIRE>.
 
-void {strcpy(yylval.type, yytext); return VOID;}
+void {strcpy(yylval.ident, yytext); return VOID;}
 
-int|char {strcpy(yylval.type, yytext); return TYPE;}
+int|char {strcpy(yylval.ident, yytext); return TYPE;}
 
-while {strcpy( yylval.key, yytext); return WHILE;}
+while {return WHILE;}
 
-if {strcpy( yylval.key, yytext); return IF;}
+if {return IF;}
 
-else {strcpy( yylval.key, yytext); return ELSE;}
+else {return ELSE;}
 
-static {strcpy( yylval.key, yytext); return STATIC;}
+static {return STATIC;}
 
 return {return RETURN;}
 
 [a-zA-Z_][a-zA-Z0-9_]* {strcpy(yylval.ident, yytext); return IDENT;}
 
-'(\\[a-z]|[^\'])' {return CHARACTER;}
+'(\\[a-z]|[^\'])' {yylval.byte = yytext[0]; return CHARACTER;}
 
-[0-9]+ {return NUM;}
+[0-9]+ {yylval.num = atoi(yytext); return NUM;}
 
 [-+] {yylval.byte = yytext[0]; return ADDSUB;}
 
 [/*%] {yylval.byte = yytext[0]; return DIVSTAR;}
 
-"&&" {strcpy(yylval.comp, yytext); return AND;} 
+"&&" {return AND;} 
 
-"||" {strcpy(yylval.comp, yytext); return OR;}
+"||" {return OR;}
 
-"==" {strcpy(yylval.comp, yytext); return EQ;}
+"==" {strcpy(yylval.ident, yytext); return EQ;}
+"!=" {strcpy(yylval.ident, yytext); return EQ;}
 
-"!=" {strcpy(yylval.comp, yytext); return EQ;}
-
-"<" {strcpy(yylval.comp, yytext); return ORDER;}
-
-"<=" {strcpy(yylval.comp, yytext); return ORDER;}
-
-">" {strcpy(yylval.comp, yytext); return ORDER;}
-
-">=" {strcpy(yylval.comp, yytext); return ORDER;}
+"<" {strcpy(yylval.ident, yytext); return ORDER;}
+"<=" {strcpy(yylval.ident, yytext); return ORDER;}
+">" {strcpy(yylval.ident, yytext); return ORDER;}
+">=" {strcpy(yylval.ident, yytext); return ORDER;}
 
 [ \t\r]+ ; 
 <*>\n               {lineno++;}

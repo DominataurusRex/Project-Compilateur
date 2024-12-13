@@ -2,6 +2,8 @@
 /* exp.y */
 /* Syntaxe des expressions en TPC */
 #include <stdio.h>
+#include <string.h>
+#include "tree.h"
 int yylex();
 void yyerror(char *);
 %}
@@ -12,8 +14,8 @@ void yyerror(char *);
     int num;
     char ident[64];
 }
-%token <node> Prog DeclVarsExt Declarateurs DeclFoncts DeclFonct EnTeteFonct Parametres ListTypVar
-%token <node> Corps DeclVarsInt SuiteInstr Instr Exp TB FB M E T F Arguments ListExp
+%type <node> Prog DeclVarsExt Declarateurs DeclFoncts DeclFonct EnTeteFonct Parametres ListTypVar
+%type <node> Corps DeclVarsInt SuiteInstr Instr Exp TB FB M E T F Arguments ListExp
 %token <byte> CHARACTER ADDSUB DIVSTAR
 %token <num> NUM
 %token <ident> IDENT TYPE ORDER EQ
@@ -22,26 +24,44 @@ void yyerror(char *);
 
 
 %%
-Prog:  DeclVarsExt DeclFoncts
+Prog:  DeclVarsExt DeclFoncts                       {$$ = makeNode(Prog);
+                                                     addChild($$, $1);
+                                                     addChild($$, $2);
+                                                     printTree($$);
+                                                     deleteTree($$);}
     ;
+
 DeclVarsExt:
-       DeclVarsExt TYPE Declarateurs ';'
-    |
+       DeclVarsExt TYPE Declarateurs ';'            {$$ = $1;
+                                                     Node* type = makeNode(Type);
+                                                     type->ident = strdup($2);
+                                                     addChild($$, type);
+                                                     addChild(type, $3);}
+                                                     
+    |                                               {$$ = makeNode(DeclVars);}
     ;
+
 Declarateurs:
-       Declarateurs ',' IDENT
-    |  IDENT
+       Declarateurs ',' IDENT                       {$$ = $1;
+                                                     Node* ident = makeNode(Ident);
+                                                     ident->ident = strdup($3);
+                                                     addSibling($$, ident);}
+    |  IDENT                                        {$$ = makeNode(Ident);
+                                                     $$->ident = strdup($1);}
     ;
+
 DeclFoncts:
-       DeclFoncts DeclFonct
-    |  DeclFonct
+       DeclFoncts DeclFonct                         {$$ = $1;
+                                                     /* addSibling($$, $2); */}
+    |  DeclFonct                                    {$$ = makeNode(DeclFonct);}
     ;
 DeclFonct:
-       EnTeteFonct Corps
+       EnTeteFonct Corps                            // {addChild($$, $1);
+                                                    //  addChild($$, $2);}
     ;
 EnTeteFonct:
-       TYPE IDENT '(' Parametres ')'
-    |  VOID IDENT '(' Parametres ')'
+       TYPE IDENT '(' Parametres ')'                {}
+    |  VOID IDENT '(' Parametres ')'                {}
     ;
 Parametres:
        VOID
@@ -51,7 +71,7 @@ ListTypVar:
        ListTypVar ',' TYPE IDENT
     |  TYPE IDENT
     ;
-Corps: '{' DeclVarsInt SuiteInstr '}'
+Corps: '{' DeclVarsInt SuiteInstr '}'               {}
     ;
 DeclVarsInt:
        DeclVarsInt TYPE Declarateurs ';'

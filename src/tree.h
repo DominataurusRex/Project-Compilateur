@@ -1,10 +1,28 @@
 /* tree.h */
 
 typedef enum {
+  Prog,
+  DeclVars,
+  Declarateurs,
+  DeclFoncts,
+  DeclFonct,
+  EnTeteFonct,
+  Parametres,
+  ListTypVar,
+  Corps,
+  SuiteInstr,
+  Instr,
+  Exp,
+  TB,
+  FB,
+  M,
   E,
   T,
-  divstar,
-  id
+  F,
+  Arguments,
+  ListExp,
+  Type,
+  Ident
   /* list all other node labels, if any */
   /* The list must coincide with the string array in tree.c */
   /* To avoid listing them twice, see https://stackoverflow.com/a/10966395 */
@@ -14,6 +32,9 @@ typedef struct Node {
   label_t label;
   struct Node *firstChild, *nextSibling;
   int lineno;
+  char* ident;
+  int num;
+  char byte;
 } Node;
 
 Node *makeNode(label_t label);

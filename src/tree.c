@@ -6,10 +6,28 @@
 extern int lineno;       /* from lexer */
 
 static const char *StringFromLabel[] = {
+  "Prog",
+  "DeclVars",
+  "Declarateurs",
+  "DeclFoncts",
+  "DeclFonct",
+  "EnTeteFonct",
+  "Parametres",
+  "ListTypVar",
+  "Corps",
+  "SuiteInstr",
+  "Instr",
+  "Exp",
+  "TB",
+  "FB",
+  "M",
   "E",
   "T",
-  "divstar",
-  "id"
+  "F",
+  "Arguments",
+  "ListExp",
+  "Type",
+  "Ident"
   /* list all other node labels, if any */
   /* The list must coincide with the label_t enum in tree.h */
   /* To avoid listing them twice, see https://stackoverflow.com/a/10966395 */
@@ -24,6 +42,9 @@ Node *makeNode(label_t label) {
   node->label = label;
   node-> firstChild = node->nextSibling = NULL;
   node->lineno=lineno;
+  node->num = 0;
+  node->byte = 0;
+  node->ident = NULL;
   return node;
 }
 
@@ -64,6 +85,9 @@ void printTree(Node *node) {
     printf(rightmost[depth] ? "\u2514\u2500\u2500 " : "\u251c\u2500\u2500 ");
   }
   printf("%s", StringFromLabel[node->label]);
+  if (node->ident != NULL) {
+    printf(": %s", node->ident);
+  }
   printf("\n");
   depth++;
   for (Node *child = node->firstChild; child != NULL; child = child->nextSibling) {
