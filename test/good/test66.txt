@@ -1,0 +1,15 @@
+int main(void) {
+    int m;
+    m = 1 + 2 + (3 + 4) * 5;
+    return;
+}
+
+char abc(int h) {
+    static char o, x;
+}
+
+void qtc(char f, char j) {
+    if ((a == 0)) {
+        printf(Oui);
+    }
+}

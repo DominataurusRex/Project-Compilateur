@@ -24,108 +24,280 @@ void yyerror(char *);
 
 
 %%
-Prog:  DeclVarsExt DeclFoncts                       {$$ = makeNode(Prog);
-                                                     addChild($$, $1);
-                                                     addChild($$, $2);
-                                                     printTree($$);
-                                                     deleteTree($$);}
+Prog:  DeclVarsExt DeclFoncts                       {
+                                                    $$ = makeNode(Prog);
+                                                    addChild($$, $1);
+                                                    addChild($$, $2);
+                                                    printTree($$);
+                                                    deleteTree($$);
+}
     ;
 
 DeclVarsExt:
-       DeclVarsExt TYPE Declarateurs ';'            {$$ = $1;
-                                                     Node* type = makeNode(Type);
-                                                     type->ident = strdup($2);
-                                                     addChild($$, type);
-                                                     addChild(type, $3);}
+       DeclVarsExt TYPE Declarateurs ';'            {
+                                                    $$ = $1;
+                                                    Node* type = makeNode(Type);
+                                                    type->ident = strdup($2);
+                                                    addChild($$, type);
+                                                    addChild(type, $3);
+}
                                                      
     |                                               {$$ = makeNode(DeclVars);}
     ;
 
 Declarateurs:
-       Declarateurs ',' IDENT                       {$$ = $1;
-                                                     Node* ident = makeNode(Ident);
-                                                     ident->ident = strdup($3);
-                                                     addSibling($$, ident);}
-    |  IDENT                                        {$$ = makeNode(Ident);
-                                                     $$->ident = strdup($1);}
+       Declarateurs ',' IDENT                       {
+                                                    $$ = $1;
+                                                    Node* ident = makeNode(Ident);
+                                                    ident->ident = strdup($3);
+                                                    addSibling($$, ident);
+}
+    |  IDENT                                        {
+                                                    $$ = makeNode(Ident);
+                                                    $$->ident = strdup($1);
+}
     ;
 
 DeclFoncts:
-       DeclFoncts DeclFonct                         {$$ = $1;
-                                                     /* addSibling($$, $2); */}
-    |  DeclFonct                                    {$$ = makeNode(DeclFonct);}
+       DeclFoncts DeclFonct                         {
+                                                    $$ = $1;
+                                                    addSibling($$, $2);
+}
+    |  DeclFonct                                    {$$ = $1;}
     ;
 DeclFonct:
-       EnTeteFonct Corps                            // {addChild($$, $1);
-                                                    //  addChild($$, $2);}
+       EnTeteFonct Corps                            {
+                                                    $$ = makeNode(DeclFonct);
+                                                    addChild($$, $1);
+                                                    addChild($$, $2);
+}
     ;
 EnTeteFonct:
-       TYPE IDENT '(' Parametres ')'                {}
-    |  VOID IDENT '(' Parametres ')'                {}
+       TYPE IDENT '(' Parametres ')'                {
+                                                    $$ = makeNode(EnTeteFonct);
+                                                    Node* type = makeNode(Type);
+                                                    type->ident = strdup($1);
+                                                    Node* ident = makeNode(Ident);
+                                                    ident->ident = strdup($2);
+                                                    addChild($$, type);
+                                                    addChild($$, ident);
+                                                    addChild($$, $4);
+}
+    |  VOID IDENT '(' Parametres ')'                {
+                                                    $$ = makeNode(EnTeteFonct);
+                                                    Node* type = makeNode(Void);
+                                                    Node* ident = makeNode(Ident);
+                                                    ident->ident = strdup($2);
+                                                    addChild($$, type);
+                                                    addChild($$, ident);
+                                                    addChild($$, $4);
+}
     ;
 Parametres:
-       VOID
-    |  ListTypVar
+       VOID                                         {
+                                                    $$ = makeNode(Var);
+                                                    Node* vide = makeNode(Void);
+                                                    addChild($$, vide);
+}        
+    |  ListTypVar                                   {$$ = $1;}
     ;
 ListTypVar:
-       ListTypVar ',' TYPE IDENT
-    |  TYPE IDENT
+       ListTypVar ',' TYPE IDENT                    {
+                                                    $$ = makeNode(Var);
+                                                    Node* type = makeNode(Type);
+                                                    type->ident = strdup($3);
+                                                    Node* ident = makeNode(Ident);
+                                                    ident->ident = strdup($4);
+                                                    addChild($$, type);
+                                                    addChild($$, ident);
+                                                    addSibling($$, $1);
+}
+    |  TYPE IDENT                                   {
+                                                    $$ = makeNode(Var);
+                                                    Node* type = makeNode(Type);
+                                                    type->ident = strdup($1);
+                                                    Node* ident = makeNode(Ident);
+                                                    ident->ident = strdup($2);
+                                                    addChild($$, type);
+                                                    addChild($$, ident);
+}
     ;
-Corps: '{' DeclVarsInt SuiteInstr '}'               {}
+Corps: '{' DeclVarsInt SuiteInstr '}'               {
+                                                    $$ = $2;
+                                                    Node* instr = makeNode(Instr);
+                                                    addSibling($$, instr);
+                                                    addChild(instr, $3);
+}
     ;
 DeclVarsInt:
-       DeclVarsInt TYPE Declarateurs ';'
-    |  DeclVarsInt STATIC TYPE Declarateurs ';'
-    |
+       DeclVarsInt TYPE Declarateurs ';'            {
+                                                    $$ = $1;
+                                                    Node* type = makeNode(Type);
+                                                    type->ident = strdup($2);
+                                                    addChild($$, type);
+                                                    addChild(type, $3);
+}
+    |  DeclVarsInt STATIC TYPE Declarateurs ';'     {
+                                                    $$ = $1;
+                                                    Node* type = makeNode(StaticType);
+                                                    type->ident = strdup($3);
+                                                    addChild($$, type);
+                                                    addChild(type, $4);
+}
+    |                                               {$$ = makeNode(DeclVars);}
     ;
 SuiteInstr:
-       SuiteInstr Instr
-    |
+       SuiteInstr Instr                             {
+                                                    if ($1 != NULL) {
+                                                        $$ = $1;
+                                                        addSibling($$, $2);
+                                                    } else {
+                                                        $$ = $2;
+                                                    }
+}
+    |                                               {$$ = NULL;}
     ;
 Instr:
-       IDENT '=' Exp ';'
-    |  IF '(' Exp ')' Instr     %prec NOELSE
-    |  IF '(' Exp ')' Instr ELSE Instr
-    |  WHILE '(' Exp ')' Instr
-    |  IDENT '(' Arguments  ')' ';'
-    |  RETURN Exp ';'
-    |  RETURN ';'
-    |  '{' SuiteInstr '}'
-    |  ';'
+       IDENT '=' Exp ';'                            {
+                                                    $$ = makeNode(Affect);
+                                                    $$->ident = strdup($1);
+                                                    addChild($$, $3);
+}
+    |  IF '(' Exp ')' Instr     %prec NOELSE        {
+                                                    $$ = makeNode(If);
+                                                    Node* cond = makeNode(Cond);
+                                                    addChild(cond, $3);
+                                                    addChild($$, cond);
+                                                    if ($5 != NULL) {
+                                                        Node* doo = makeNode(Do);
+                                                        addChild(doo, $5);
+                                                        addChild($$, doo);
+                                                    }
+}
+    |  IF '(' Exp ')' Instr ELSE Instr              {
+                                                    $$ = makeNode(If);
+                                                    Node* cond = makeNode(Cond);
+                                                    addChild(cond, $3);
+                                                    addChild($$, cond);
+                                                    if ($5 != NULL) {
+                                                        Node* doo = makeNode(Do);
+                                                        addChild(doo, $5);
+                                                        addChild($$, doo);
+                                                    }
+                                                    if ($7 != NULL) {
+                                                        Node* elsee = makeNode(Else);
+                                                        addChild(elsee, $7);
+                                                        addChild($$, elsee);
+                                                    }
+}
+    |  WHILE '(' Exp ')' Instr                      {
+                                                    $$ = makeNode(While);
+                                                    Node* cond = makeNode(Cond);
+                                                    addChild(cond, $3);
+                                                    addChild($$, cond);
+                                                    if ($5 != NULL) {
+                                                        Node* doo = makeNode(Do);
+                                                        addChild(doo, $5);
+                                                        addChild($$, doo);
+                                                    }
+}
+    |  IDENT '(' Arguments  ')' ';'                 {
+                                                    $$ = makeNode(Funct);
+                                                    $$->ident = strdup($1);
+                                                    addChild($$, $3);
+}
+    |  RETURN Exp ';'                               {
+                                                    $$ = makeNode(Return);
+                                                    addChild($$, $2);
+}
+    |  RETURN ';'                                   {$$ = makeNode(Return);}
+    |  '{' SuiteInstr '}'                           {$$ = $2;}
+    |  ';'                                          {$$ = NULL;}
     ;
-Exp :  Exp OR TB
-    |  TB
+Exp :  Exp OR TB                                    {
+                                                    $$ = makeNode(Or);
+                                                    addChild($$, $1);
+                                                    addChild($$, $3);
+}
+    |  TB                                           {$$ = $1;}
     ;
-TB  :  TB AND FB
-    |  FB
+TB  :  TB AND FB                                    {
+                                                    $$ = makeNode(And);
+                                                    addChild($$, $1);
+                                                    addChild($$, $3);
+}
+    |  FB                                           {$$ = $1;}
     ;
-FB  :  FB EQ M
-    |  M
+FB  :  FB EQ M                                      {
+                                                    $$ = makeNode(Equal);
+                                                    $$->ident = strdup($2);
+                                                    addChild($$, $1);
+                                                    addChild($$, $3);
+}
+    |  M                                            {$$ = $1;}
     ;
-M   :  M ORDER E
-    |  E
+M   :  M ORDER E                                    {
+                                                    $$ = makeNode(Order);
+                                                    $$->ident = strdup($2);
+                                                    addChild($$, $1);
+                                                    addChild($$, $3);
+}
+    |  E                                            {$$ = $1;}
     ;
-E   :  E ADDSUB T
-    |  T
+E   :  E ADDSUB T                                   {
+                                                    $$ = makeNode(BiOperator);
+                                                    $$->byte = $2;
+                                                    addChild($$, $1);
+                                                    addChild($$, $3);
+}
+    |  T                                            {$$ = $1;}
     ;    
-T   :  T DIVSTAR F 
-    |  F
+T   :  T DIVSTAR F                                  {
+                                                    $$ = makeNode(BiOperator);
+                                                    $$->byte = $2;
+                                                    addChild($$, $1);
+                                                    addChild($$, $3);
+}
+    |  F                                            {$$ = $1;}
     ;
-F   :  ADDSUB F
-    |  '!' F
-    |  '(' Exp ')'
-    |  NUM
-    |  CHARACTER
-    |  IDENT
-    |  IDENT '(' Arguments  ')'
+F   :  ADDSUB F                                     {
+                                                    $$ = makeNode(UnOperator);
+                                                    $$->byte = $1;
+                                                    addChild($$, $2);
+}
+    |  '!' F                                        {
+                                                    $$ = makeNode(Negate);
+                                                    addChild($$, $2);
+}
+    |  '(' Exp ')'                                  {$$ = $2;}
+    |  NUM                                          {
+                                                    $$ = makeNode(Num);
+                                                    $$->num = $1;
+}
+    |  CHARACTER                                    {
+                                                    $$ = makeNode(Char);
+                                                    $$->byte = $1;
+}
+    |  IDENT                                        {
+                                                    $$ = makeNode(Ident);
+                                                    $$->ident = strdup($1);
+}
+    |  IDENT '(' Arguments  ')'                     {
+                                                    $$ = makeNode(Funct);
+                                                    $$->ident = strdup($1);
+                                                    addChild($$, $3);
+}
     ;
 Arguments:
-       ListExp
-    |
+       ListExp                                      {$$ = $1;}
+    |                                               {$$ = makeNode(Void);}
     ;
 ListExp:
-       ListExp ',' Exp
-    |  Exp
+       ListExp ',' Exp                              {
+                                                    $$ = $1;
+                                                    addSibling($$, $3);
+}
+    |  Exp                                          {$$ = $1;}
     ;
 %%
 
