@@ -37,7 +37,10 @@ Syn-err test:
     - 02: Pas de type de retour
     - 03: Pas de parenthèse fermante après un IF
     - 04: Déclaration de IF en tant que variable
-    - 21: Pas de parenthèse fermante après un WHILE
-    - 21: Pas de ; après instruction
-    - 21: Pas de déclaration de variable
+    - 05: Pas de parenthèse fermante après un WHILE
+    - 06: Pas de ; après instruction
+    - 07: Pas de d'accolade ouvrante après déclaration de fonction
+    - 08: Pas de d'accolade fermante
+    - 09: 
+    - 10: 
     
