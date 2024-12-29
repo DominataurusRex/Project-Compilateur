@@ -1,0 +1,4 @@
+char func(void){
+    static int a;
+    return a;
+}

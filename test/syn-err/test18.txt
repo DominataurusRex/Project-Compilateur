@@ -1,0 +1,3 @@
+int funct(void){
+    char a char b;
+}

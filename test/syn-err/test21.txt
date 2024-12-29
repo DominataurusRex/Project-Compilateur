@@ -1,0 +1,4 @@
+int funct(void)
+char hi(void){
+    return '&';
+}

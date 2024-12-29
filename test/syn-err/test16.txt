@@ -1,0 +1,7 @@
+int funct(void){
+    int a;
+    if (a <= > 4){
+        return a;
+    }
+    return a;
+}

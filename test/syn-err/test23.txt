@@ -1,0 +1,6 @@
+int funct(void){
+    char a;
+    char funct2(void){
+        return '&';
+    }
+}

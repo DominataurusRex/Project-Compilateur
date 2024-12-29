@@ -36,7 +36,7 @@ return {return RETURN;}
 
 [a-zA-Z_][a-zA-Z0-9_]* {strcpy(yylval.ident, yytext); return IDENT;}
 
-'(\\[a-z]|[^\'])' {yylval.byte = yytext[0]; return CHARACTER;}
+'(\\[a-z]|[^\'])' {yylval.byte = yytext[1]; return CHARACTER;}
 
 [0-9]+ {yylval.num = atoi(yytext); return NUM;}
 
