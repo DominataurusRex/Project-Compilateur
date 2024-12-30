@@ -5,7 +5,7 @@ LEXER = tpc_lex
 
 bin/tpcas: obj/$(LEXER).o obj/$(PARSER).o obj/tree.o
 	mkdir bin -p
-	$(CC) -o $@ $^
+	$(CC) -o $@ $^ -lfl
 
 obj/tree.o: src/tree.c src/tree.h
 	$(CC) -c -o $@ $< $(CFLAGS)
@@ -46,11 +46,3 @@ testB:
 		echo "Traitement $$file"; \
 		./bin/tpcas < "$$file"; \
 	done
-
-
-# Temporaire necessite src/tpc_lex_temp.lex
-temp:
-	mkdir obj -p
-	mkdir bin -p
-	flex -o obj/lex_temp.c src/tpc_lex_temp.lex
-	gcc -std=c17 -pedantic -Wall -o bin/temp obj/lex_temp.c

@@ -3,29 +3,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "tree.h"
-extern int lineno;       /* from lexer */
 
 static const char *StringFromLabel[] = {
     "Prog",
     "DeclVars",
-    "Declarateurs",
-    "DeclFoncts",
     "DeclFonct",
     "EnTeteFonct",
-    "Parametres",
-    "ListTypVar",
-    "Corps",
-    "SuiteInstr",
     "Instr",
-    "Exp",
-    "TB",
-    "FB",
-    "M",
-    "E",
-    "T",
-    "F",
-    "Arguments",
-    "ListExp",
     "Type",
     "StaticType",
     "Ident",
@@ -62,7 +46,6 @@ Node *makeNode(label_t label) {
     }
     node->label = label;
     node-> firstChild = node->nextSibling = NULL;
-    node->lineno=lineno;
     node->num = 0;
     node->byte = 0;
     node->ident = NULL;

@@ -4,7 +4,7 @@
 #include "tree.h"
 #include "tpc.tab.h"
 void yyerror(char* msg);
-int lineno = 1;
+extern YYLTYPE yylloc;
 %}
 
 %option nounput
@@ -15,48 +15,52 @@ int lineno = 1;
 %%
 
 "//".*
-"/*" BEGIN COMMENTAIRE;
-<COMMENTAIRE>\n {lineno++;}
-<COMMENTAIRE>"*/" BEGIN INITIAL;
+"/*"                    BEGIN COMMENTAIRE;
+<COMMENTAIRE>\n         {yylloc.first_line++; yylloc.first_column = 1;}
+<COMMENTAIRE>"*/"       BEGIN INITIAL;
 <COMMENTAIRE>.
 
-void {strcpy(yylval.ident, yytext); return VOID;}
+void                    {yylloc.first_column += 4; strcpy(yylval.ident, yytext); return VOID;}
 
-int|char {strcpy(yylval.ident, yytext); return TYPE;}
+int|char                {yylloc.first_column += yyleng; strcpy(yylval.ident, yytext); return TYPE;}
 
-while {return WHILE;}
+while                   {yylloc.first_column += 5; return WHILE;}
 
-if {return IF;}
+if                      {yylloc.first_column += 2; return IF;}
 
-else {return ELSE;}
+else                    {yylloc.first_column += 4; return ELSE;}
 
-static {return STATIC;}
+static                  {yylloc.first_column += 6; return STATIC;}
 
-return {return RETURN;}
+return                  {yylloc.first_column += 6; return RETURN;}
 
-[a-zA-Z_][a-zA-Z0-9_]* {strcpy(yylval.ident, yytext); return IDENT;}
+[a-zA-Z_][a-zA-Z0-9_]*  {yylloc.first_column += yyleng; strcpy(yylval.ident, yytext); return IDENT;}
 
-'(\\[a-z]|[^\'])' {yylval.byte = yytext[1]; return CHARACTER;}
+'(\\[a-z]|[^\'])'       {yylloc.first_column++; yylval.byte = yytext[1]; return CHARACTER;}
 
-[0-9]+ {yylval.num = atoi(yytext); return NUM;}
+[0-9]+                  {yylloc.first_column += yyleng; yylval.num = atoi(yytext); return NUM;}
 
-[-+] {yylval.byte = yytext[0]; return ADDSUB;}
+[-+]                    {yylloc.first_column++; yylval.byte = yytext[0]; return ADDSUB;}
 
-[/*%] {yylval.byte = yytext[0]; return DIVSTAR;}
+[/*%]                   {yylloc.first_column++; yylval.byte = yytext[0]; return DIVSTAR;}
 
-"&&" {return AND;} 
+"&&"                    {yylloc.first_column += 2; return AND;} 
 
-"||" {return OR;}
+"||"                    {yylloc.first_column += 2; return OR;}
 
-"==" {strcpy(yylval.ident, yytext); return EQ;}
-"!=" {strcpy(yylval.ident, yytext); return EQ;}
+"=="                    {yylloc.first_column += 2; strcpy(yylval.ident, yytext); return EQ;}
 
-"<" {strcpy(yylval.ident, yytext); return ORDER;}
-"<=" {strcpy(yylval.ident, yytext); return ORDER;}
-">" {strcpy(yylval.ident, yytext); return ORDER;}
-">=" {strcpy(yylval.ident, yytext); return ORDER;}
+"!="                    {yylloc.first_column += 2; strcpy(yylval.ident, yytext); return EQ;}
+
+"<"                     {yylloc.first_column++; strcpy(yylval.ident, yytext); return ORDER;}
+
+"<="                    {yylloc.first_column += 2; strcpy(yylval.ident, yytext); return ORDER;}
+
+">"                     {yylloc.first_column++; strcpy(yylval.ident, yytext); return ORDER;}
+
+">="                    {yylloc.first_column += 2; strcpy(yylval.ident, yytext); return ORDER;}
 
 [ \t\r]+ ; 
-<*>\n               {lineno++;}
-<*>.                {return yytext[0];}
+<*>\n                   {yylloc.first_line++; yylloc.first_column = 1;}
+<*>.                    {yylloc.first_column++; return yytext[0];}
 %%

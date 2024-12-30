@@ -6,6 +6,7 @@ int main(void) {
 
 char abc(int h) {
     static char o, x;
+    int oui;
 }
 
 void qtc(char f, char j) {
