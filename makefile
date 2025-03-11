@@ -3,20 +3,20 @@ CFLAGS = -Wall -g -Iobj -Isrc
 PARSER = tpc
 LEXER = tpc_lex
 
-bin/tpcas: obj/$(LEXER).o obj/$(PARSER).o obj/tree.o
+bin/tpcas: obj/$(LEXER).o obj/$(PARSER).o obj/tree.o obj/table_sym.o obj/main.o 
 	mkdir bin -p
 	$(CC) -o $@ $^ -lfl
 
-obj/tree.o: src/tree.c src/tree.h
-	$(CC) -c -o $@ $< $(CFLAGS)
+obj/main.o: src/main.c
+	gcc -c -o obj/main.o src/main.c $(CFLAGS)
 
-obj/$(PARSER).o: obj/$(PARSER).tab.c src/tree.h
+obj/$(PARSER).o: obj/$(PARSER).tab.c src/tree.h src/table_sym.h
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 obj/$(LEXER).o: obj/$(LEXER).c obj/$(PARSER).tab.h
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-obj/%.o: src/%.c
+obj/%.o: src/%.c src/%.h
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 obj/$(LEXER).c: src/$(LEXER).lex obj/$(PARSER).tab.h
