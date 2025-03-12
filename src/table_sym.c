@@ -3,10 +3,15 @@
 #include <math.h>
 #include <string.h>
 #include "table_sym.h"
+#include "tree.h"
 
-Table* initTableHash() {
+Table* initTableHash(char* type) {
     Table* new = (Table*) malloc(sizeof(Table));
     if (new == NULL) exit(1);
+    new->type = type;
+    for (int i = 0; i < TAILLE; i ++) {
+        new->lst_tab[i] = NULL;
+    }
     return new;
 }
 
@@ -23,32 +28,36 @@ void deleteTableHash(Table* table) {
 }
 
 
-int addHash(Table* table, char* ident, char* type) {
-    int val = functHash(ident);
-    Variable* temp = &table->lst_tab[val];
-    for (; temp->id != NULL; temp = temp->suiv) {
-        if (strcmp(ident, temp->id) == 0) {
-            printf("Present  %2d %s\n", val, ident);
+int verifHash(Table* table, char* ident, char* type) {
+    Variable* var = table->lst_tab[functHash(ident)];
+    for (; var != NULL; var = var->suiv) {
+        if (!strcmp(ident, var->id)) {
             return 1;
         }
     }
-    printf("Ajout    %2d %s\n", val, ident);
-    temp->id = ident;
-    temp->type = type;
-    temp->suiv = (Variable*) malloc(sizeof(Variable));
     return 0;
 }
 
 
+void addHash(Table* table, char* ident, char* type) {
+    int hash = functHash(ident);
+    Variable* new = (Variable*) malloc(sizeof(Variable));
+    if (new == NULL) exit(1);
+    new->id = ident;
+    new->type = type;
+    printf("%d\n", hash);
+    new->suiv = table->lst_tab[hash];
+    table->lst_tab[hash] = new;
+}
+
+
 void showHash(Table* table) {
+    fprintf(stdout, "========== %s ==========\n", table->type);
+    Variable* var;
     for (int i = 0; i < TAILLE; i++) {
-        if (table->lst_tab[i].id != NULL) {
-            fprintf(stdout, "========== %2d ==========\n", i);
-            Variable* temp = &table->lst_tab[i];
-            for (; temp->id != NULL; temp = temp->suiv) {
-                fprintf(stdout, "Id: %-16s Type: %-6s\n", temp->id, temp->type);
-            }
-            fprintf(stdout, "\n");
+        var = table->lst_tab[i];
+        for (; var != NULL; var = var->suiv) {
+            fprintf(stdout, "Bucket %-2d | Type: %-4s | Id: %s\n", i, var->type, var->id);
         }
     }
 }

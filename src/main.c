@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
-#include "tree.h"
+#include "parcour_tree.h"
+#include "table_sym.h"
 
 int yyparse(void);
 extern Node* root;
@@ -44,6 +45,9 @@ int main(int argc, char **argv) {
     int value = yyparse();
     if (show_tree) printTree(root);
     fprintf(stdout, "%d\n", value);
+    Table* table = initTableHash("GlobalDecl");
+    parcourFunction(table, root);
+    showHash(table);
     deleteTree(root);
     return 0;
 }

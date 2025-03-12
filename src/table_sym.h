@@ -3,6 +3,10 @@
 
 #define TAILLE 16
 
+
+/**
+ * Représente une variable
+ */
 typedef struct variable{
     char * id; //nom de la variable 
     char * type; //type de la variable 
@@ -10,18 +14,23 @@ typedef struct variable{
 } Variable;
 
 
+/**
+ * Représente une table de hash pour des variables
+ */
 typedef struct table {
-    struct variable lst_tab[TAILLE];
+    char* type;
+    struct variable* lst_tab[TAILLE];
 } Table;
 
 
-Table* initTableHash();
+
+Table* initTableHash(char* type);
 
 void deleteTableHash(Table* table);
 
-int presenceHash(Table* table, char * ident);
+void addHash(Table* table, char* ident, char* type);
 
-int addHash(Table* table, char* ident, char* type);
+int verifHash(Table* table, char* ident, char* type);
 
 void showHash(Table* table);
 

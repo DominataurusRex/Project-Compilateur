@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "tree.h"
-#include "table_sym.h"
 int yylex();
 void yyerror(char *);
 Node* root = NULL;

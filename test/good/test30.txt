@@ -1,5 +1,6 @@
-char a;
-int b, c, d;
+char a0;
+int b1, c2, d3;
+int e4;
 
 int main(void) {return 0;}
 
