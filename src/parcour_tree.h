@@ -5,7 +5,7 @@
 #include "table_sym.h"
 
 
-void parcourFunction(Table* table, Node* node);
+void fillTableCeption(TableCeption* table_ception, Node* node);
 
 #endif
 

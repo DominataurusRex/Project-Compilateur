@@ -8,9 +8,10 @@
  * Représente une variable
  */
 typedef struct variable{
-    char * id; //nom de la variable 
-    char * type; //type de la variable 
-    struct variable * suiv; //variable suivante (utilisée dans le cas d'une collision)
+    char * id;              // Nom de la variable 
+    char * type;            // Type de la variable 
+    int is_static;          // Si variable static
+    struct variable * suiv; // Variable suivante (utilisée dans le cas d'une collision)
 } Variable;
 
 
@@ -18,21 +19,38 @@ typedef struct variable{
  * Représente une table de hash pour des variables
  */
 typedef struct table {
-    char* type;
-    struct variable* lst_tab[TAILLE];
+    char* name;                         // Nom de la table
+    struct variable* lst_tab[TAILLE];   // Hash des variable
+    struct table* suiv;                 // Table suivant (collision TableCeption)
 } Table;
 
 
+/**
+ * Représente les tables de hash du programme
+ */
+typedef struct tableCeption {
+    struct table* global_var;        // Table variable global
+    struct table* global_funct;      // Table fonction global 
+    struct table* lst_tab[TAILLE];  // Table hash de table local 
+} TableCeption;
 
-Table* initTableHash(char* type);
+
+TableCeption* initTableCeption();
+
+Table* initTableHash(char* name);
 
 void deleteTableHash(Table* table);
 
 void addHash(Table* table, char* ident, char* type);
 
-int verifHash(Table* table, char* ident, char* type);
+int verifHash(Table* table, char* ident);
 
-void showHash(Table* table);
+void showCeption(TableCeption* table_ception);
+
+void showTable(Table* table);
+
+void addCeption(TableCeption* table_ception, Table* table);
+
 
 /*
 typedef struct {

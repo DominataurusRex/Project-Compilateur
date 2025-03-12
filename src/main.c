@@ -43,11 +43,13 @@ int main(int argc, char **argv) {
         }
     }
     int value = yyparse();
-    if (show_tree) printTree(root);
     fprintf(stdout, "%d\n", value);
-    Table* table = initTableHash("GlobalDecl");
-    parcourFunction(table, root);
-    showHash(table);
-    deleteTree(root);
+    if (!value) {
+        if (show_tree) printTree(root);
+        TableCeption* table_ception = initTableCeption();
+        fillTableCeption(table_ception, root);
+        showCeption(table_ception);
+        deleteTree(root);
+    }
     return 0;
 }

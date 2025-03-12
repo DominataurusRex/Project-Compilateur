@@ -1,15 +1,15 @@
 /* tree.h */
 
 typedef enum {
-    Prog,
+    Prog,           // 0
     DeclVars,
-    DeclFonct,
+    DeclFonct,      // 2
     EnTeteFonct,
-    Instr,
+    Instr,          // 4
     Type,
-    StaticType,
+    StaticType,     // 6
     Ident,
-    Void,
+    Void,           // 8
     Var,
     Funct,
     Char,
