@@ -8,10 +8,11 @@
  * Représente une variable
  */
 typedef struct variable{
-    char * id;              // Nom de la variable 
-    char * type;            // Type de la variable 
-    int is_static;          // Si variable static
-    struct variable * suiv; // Variable suivante (utilisée dans le cas d'une collision)
+    char * id;                  // Nom de la variable 
+    char * type;                // Type de la variable 
+    int is_static;              // Si variable static
+    struct variable * suiv;     // Variable suivante (utilisée dans le cas d'une collision)
+    struct table* local_var;    // Hash des variables locales
 } Variable;
 
 
@@ -19,9 +20,7 @@ typedef struct variable{
  * Représente une table de hash pour des variables
  */
 typedef struct table {
-    char* name;                         // Nom de la table
     struct variable* lst_tab[TAILLE];   // Hash des variable
-    struct table* suiv;                 // Table suivant (collision TableCeption)
 } Table;
 
 
@@ -30,26 +29,28 @@ typedef struct table {
  */
 typedef struct tableCeption {
     struct table* global_var;        // Table variable global
-    struct table* global_funct;      // Table fonction global 
-    struct table* lst_tab[TAILLE];  // Table hash de table local 
+    struct table* global_funct;      // Table fonction global
 } TableCeption;
 
 
 TableCeption* initTableCeption();
 
-Table* initTableHash(char* name);
+void addHashVar(Table* table_var, char* ident, char* type);
 
-void deleteTableHash(Table* table);
-
-void addHash(Table* table, char* ident, char* type);
+Table* addHashFunct(Table* table_funct, char* ident, char* type);
 
 int verifHash(Table* table, char* ident);
 
+void deleteVar(Variable* var);
+
+void deleteTableCeption(TableCeption* table_ception);
+
 void showCeption(TableCeption* table_ception);
 
-void showTable(Table* table);
 
-void addCeption(TableCeption* table_ception, Table* table);
+
+
+void showTable(Table* table);
 
 
 /*

@@ -5,26 +5,34 @@
 #include "table_sym.h"
 #include "tree.h"
 
-TableCeption* initTableCeption() {
-    TableCeption* new = (TableCeption*) malloc(sizeof(TableCeption));
+
+Variable* initVariable(char* ident, char* type) {
+    Variable* new = (Variable*) malloc(sizeof(Variable));
     if (new == NULL) exit(1);
-    new->global_var = NULL;
-    new->global_funct = NULL;
-    for (int i = 0; i < TAILLE; i++) {
+    new->id = ident;
+    new->type = type;
+    new->is_static = 0;
+    new->suiv = NULL;
+    new->local_var = NULL;
+    return new;
+}
+
+
+Table* initTableHash() {
+    Table* new = (Table*) malloc(sizeof(Table));
+    if (new == NULL) exit(1);
+    for (int i = 0; i < TAILLE; i ++) {
         new->lst_tab[i] = NULL;
     }
     return new;
 }
 
 
-Table* initTableHash(char* name) {
-    Table* new = (Table*) malloc(sizeof(Table));
+TableCeption* initTableCeption() {
+    TableCeption* new = (TableCeption*) malloc(sizeof(TableCeption));
     if (new == NULL) exit(1);
-    new->name = name;
-    for (int i = 0; i < TAILLE; i ++) {
-        new->lst_tab[i] = NULL;
-    }
-    new->suiv = NULL;
+    new->global_var = initTableHash();
+    new->global_funct = initTableHash();
     return new;
 }
 
@@ -36,10 +44,6 @@ unsigned int functHash(char* ident) {
     int result = (tmp % (int) pow(2, 30)) % TAILLE;
     if (result < 0) return -result;
     return result;
-}
-
-void deleteTableHash(Table* table) {
-    printf("WIP\n");
 }
 
 
@@ -54,47 +58,88 @@ int verifHash(Table* table, char* ident) {
 }
 
 
-void addHash(Table* table, char* ident, char* type) {
+void addHashVar(Table* table_var, char* ident, char* type) {
     int hash = functHash(ident);
-    Variable* new = (Variable*) malloc(sizeof(Variable));
-    if (new == NULL) exit(1);
-    new->id = ident;
-    new->type = type;
-    new->is_static = 0;
-    new->suiv = table->lst_tab[hash];
-    table->lst_tab[hash] = new;
+    Variable* new = initVariable(ident, type);
+    new->suiv = table_var->lst_tab[hash];
+    table_var->lst_tab[hash] = new;
+    
 }
 
 
-void addCeption(TableCeption* table_ception, Table* table) {
-    int hash = functHash(table->name);
-    table->suiv = table_ception->lst_tab[hash];
-    table_ception->lst_tab[hash] = table;
+Table* addHashFunct(Table* table_funct, char* ident, char* type) {
+    int hash = functHash(ident);
+    Variable* new = initVariable(ident, type);
+    new->suiv = table_funct->lst_tab[hash];
+    table_funct->lst_tab[hash] = new;
+    new->local_var = initTableHash();
+    return new->local_var;
 }
 
 
-void showTable(Table* table) {
-    fprintf(stdout, "========== %s ==========\n", table->name);
+void deleteTable(Table* table) {
+    for (int i = 0; i < TAILLE; i++) {
+        deleteVar(table->lst_tab[i]);
+    }
+    free(table);
+    table = NULL;
+}
+
+
+void deleteVar(Variable* var) {
+    if (var == NULL) return;
+    if (var->local_var != NULL) deleteTable(var->local_var);
+    deleteVar(var->suiv);
+    free(var);
+    var = NULL;
+}
+
+
+void deleteTableCeption(TableCeption* table_ception) {
+    deleteTable(table_ception->global_funct);
+    deleteTable(table_ception->global_var);
+    free(table_ception);
+    table_ception = NULL;
+}
+
+
+void showTableVar(Table* table, int indent) {
+    fprintf(stdout, "\033[32:1m");
+    for (int j = 0; j < indent; j++) {
+        fprintf(stdout, "--------");
+    }
+    fprintf(stdout, "==============================\n");
     Variable* var;
     for (int i = 0; i < TAILLE; i++) {
         var = table->lst_tab[i];
         for (; var != NULL; var = var->suiv) {
+            for (int j = 0; j < indent; j++) {
+                fprintf(stdout, "\t");
+            }
+            fprintf(stdout, "Bucket %-2d | Type: %-4s | Static: %d | Id: %s\n", i, var->type, var->is_static, var->id);
+        }
+    }
+    fprintf(stdout, "\033[0m\n");
+}
+
+
+void showTableFunct(Table* table) {
+    fprintf(stdout, "\033[33:1m");
+    fprintf(stdout, "==============================\n");
+    Variable* var;
+    for (int i = 0; i < TAILLE; i++) {
+        var = table->lst_tab[i];
+        for (; var != NULL; var = var->suiv) {
+            fprintf(stdout, "\033[33:1m");
             fprintf(stdout, "Bucket %-2d | Type: %-4s | Id: %s\n", i, var->type, var->id);
+            showTableVar(var->local_var, 1);
+            fprintf(stdout, "\033[0m");
         }
     }
 }
 
 
 void showCeption(TableCeption* table_ception) {
-    showTable(table_ception->global_var);
-    fprintf(stdout, "\n");
-    showTable(table_ception->global_funct);
-    fprintf(stdout, "\n=============== LocalVar ===============\n");
-    for (int i = 0; i < TAILLE; i++) {
-        Table* tmp = table_ception->lst_tab[i];
-        for(; tmp != NULL; tmp = tmp->suiv) {
-            fprintf(stdout, "\nBucket %d\n", i);
-            showTable(tmp);
-        }
-    }
+    showTableVar(table_ception->global_var, 0);
+    showTableFunct(table_ception->global_funct);
 }

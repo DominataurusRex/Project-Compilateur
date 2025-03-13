@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
+#include "compil.h"
 #include "parcour_tree.h"
 #include "table_sym.h"
+#include "tree.h"
 
 int yyparse(void);
 extern Node* root;
+extern TableCeption* table_ception;
 
 static struct option long_options[] = {
     {"tree", no_argument, 0, 't'},
@@ -46,9 +49,13 @@ int main(int argc, char **argv) {
     fprintf(stdout, "%d\n", value);
     if (!value) {
         if (show_tree) printTree(root);
-        TableCeption* table_ception = initTableCeption();
-        fillTableCeption(table_ception, root);
+        
+        fillTableCeption();
         showCeption(table_ception);
+        deleteTableCeption(table_ception);
+        /*
+        createNasm();
+        */
         deleteTree(root);
     }
     return 0;

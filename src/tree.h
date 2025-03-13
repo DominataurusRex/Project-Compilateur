@@ -11,13 +11,13 @@ typedef enum {
     Ident,
     Void,           // 8
     Var,
-    Funct,
+    Funct,          // 10
     Char,
-    Num,
+    Num,            // 12
     Return,
-    Affect,
+    Affect,         // 14
     UnOperator,
-    BiOperator,
+    BiOperator,     // 16
     Negate,
     Order,
     Compar,

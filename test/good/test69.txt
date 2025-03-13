@@ -6,4 +6,4 @@ int main(void) {int abc; return 0;}
 
 char abc(void) {char def; return 0;}
 
-char def(int x, char y) {int g; return 0;}
+void def(int x, char y) {int a;}

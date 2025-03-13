@@ -1,0 +1,9 @@
+int main(void) {
+    int a;
+    a = 45 - 2 - 7 - 8;
+    return 0;
+}
+
+void test(void){return;}
+
+int coucou(int a){return a;}

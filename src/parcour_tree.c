@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "parcour_tree.h"
+#include "tree.h"
+
+TableCeption* table_ception;
+extern Node* root;
 
 
 void parcourFunctionVar(Table* table, Node* node) {
@@ -14,8 +18,8 @@ void parcourFunctionVar(Table* table, Node* node) {
                 temp = start->firstChild;
                 for (; temp != NULL; temp = temp->nextSibling) {
                     if (!verifHash(table, temp->ident)) {
-                        addHash(table, temp->ident, start->ident);
-                        printf("Ajout var %s\n", temp->ident);
+                        addHashVar(table, temp->ident, start->ident);
+                        // printf("Ajout var %s\n", temp->ident);
                     } else {
                         printf("Error dupli var %s\n", temp->ident);
                         exit(1);
@@ -25,31 +29,26 @@ void parcourFunctionVar(Table* table, Node* node) {
             return;
         }
     }
-
-    /*
-    Node* temp = node->firstChild->firstChild;
-    */
 }
 
 
-Table* getEnTeteFunct(Table* global_funct, Node* node) {
-    Node* en_tete = node->firstChild->firstChild;
+Table* getEnTeteFunct(Node* node) {
+    Node* en_tete = node->firstChild->firstChild;       // Position 1er fils EnTeteFonct
     char* name = en_tete->nextSibling->ident;
-    if (verifHash(global_funct, name)) {
+    if (verifHash(table_ception->global_funct, name)) {
         printf("Error dupli funct %s\n", name);
         exit(1);
     }
-    addHash(global_funct, name, en_tete->ident);
-    Table* table = initTableHash(name);
+    Table* table = addHashFunct(table_ception->global_funct, name, en_tete->label == Void? "void": en_tete->ident);
     Node* tmp = en_tete->nextSibling->nextSibling;
-    printf("Ajout funct %s\n", name);
+    // printf("Ajout funct %s\n", name);
     for (; tmp != NULL; tmp = tmp->nextSibling) {
         if (tmp->firstChild->label == Void) break;
         if (!verifHash(table, tmp->firstChild->nextSibling->ident)) {
-            addHash(table, tmp->firstChild->nextSibling->ident, tmp->firstChild->ident);
-            printf("%s Ajout var %s\n", table->name, tmp->firstChild->nextSibling->ident);
+            addHashVar(table, tmp->firstChild->nextSibling->ident, tmp->firstChild->ident);
+            // printf("%s Ajout var %s\n", name, tmp->firstChild->nextSibling->ident);
         } else {
-            printf("%s Error dupli var %s\n", table->name, tmp->firstChild->nextSibling->ident);
+            printf("%s Error dupli var %s\n", name, tmp->firstChild->nextSibling->ident);
             exit(1);
         }
     }
@@ -57,24 +56,22 @@ Table* getEnTeteFunct(Table* global_funct, Node* node) {
 }
 
 
-void parcourFunction(TableCeption* table_ception, Node* node) {
-    Node* start = node->firstChild;
+/**
+ * Parcour chaque fonction dans l'arbre
+ */
+void parcourFunction() {
+    Node* start = root->firstChild;
     for (; start != NULL; start = start->nextSibling) {
         if (start->label == DeclFonct) {
-            Table* table = getEnTeteFunct(table_ception->global_funct, start);
+            Table* table = getEnTeteFunct(start);
             parcourFunctionVar(table, start);
-            addCeption(table_ception, table);
         }
     }
 }
 
 
-
-
-
-void fillTableCeption(TableCeption* table_ception, Node* root) {
-    table_ception->global_var = initTableHash("\%GlobalVar\%");
+void fillTableCeption() {
+    table_ception = initTableCeption();
     parcourFunctionVar(table_ception->global_var, root);
-    table_ception->global_funct = initTableHash("\%GlobalFunct\%");
-    parcourFunction(table_ception, root);
+    parcourFunction();
 }
