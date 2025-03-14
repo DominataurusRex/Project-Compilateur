@@ -35,7 +35,7 @@ typedef struct tableCeption {
 
 TableCeption* initTableCeption();
 
-void addHashVar(Table* table_var, char* ident, char* type);
+void addHashVar(Table* table_var, char* ident, char* type, int is_static);
 
 Table* addHashFunct(Table* table_funct, char* ident, char* type);
 

@@ -9,6 +9,7 @@ int yylex();
 void yyerror(char *);
 Node* root = NULL;
 extern char *yytext;
+extern char* file_name;
 Node* tree;
 %}
 
@@ -307,5 +308,13 @@ ListExp:
 %%
 
 void yyerror(char* msg) {
-    fprintf(stderr, "Erreur %s - ligne %d - colonne %d - a proximite de '%s'\n", msg, yylloc.first_line, yylloc.first_column, yytext);
+    fprintf(
+        stderr,
+        "%s:%d:%d: \033[31;1merror\033[0m %s \033[1m‘%s’\033[0m\n",
+        file_name,
+        yylloc.first_line,
+        yylloc.first_column,
+        msg,
+        yytext
+    );
 }

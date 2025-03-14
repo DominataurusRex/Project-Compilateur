@@ -76,6 +76,9 @@ void deleteTree(Node *node) {
     if (node->nextSibling) {
         deleteTree(node->nextSibling);
     }
+    if (node->ident) {
+        free(node->ident);
+    }
     free(node);
 }
 

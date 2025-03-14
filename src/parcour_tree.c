@@ -17,8 +17,8 @@ void parcourFunctionVar(Table* table, Node* node) {
             for (; start != NULL; start = start->nextSibling) {
                 temp = start->firstChild;
                 for (; temp != NULL; temp = temp->nextSibling) {
-                    if (!verifHash(table, temp->ident)) {
-                        addHashVar(table, temp->ident, start->ident);
+                    if (!verifHash(table, temp->ident) && !verifHash(table_ception->global_var, temp->ident)) {
+                        addHashVar(table, temp->ident, start->ident, start->label == StaticType? 1: 0);
                         // printf("Ajout var %s\n", temp->ident);
                     } else {
                         printf("Error dupli var %s\n", temp->ident);
@@ -45,7 +45,7 @@ Table* getEnTeteFunct(Node* node) {
     for (; tmp != NULL; tmp = tmp->nextSibling) {
         if (tmp->firstChild->label == Void) break;
         if (!verifHash(table, tmp->firstChild->nextSibling->ident)) {
-            addHashVar(table, tmp->firstChild->nextSibling->ident, tmp->firstChild->ident);
+            addHashVar(table, tmp->firstChild->nextSibling->ident, tmp->firstChild->ident, 0);
             // printf("%s Ajout var %s\n", name, tmp->firstChild->nextSibling->ident);
         } else {
             printf("%s Error dupli var %s\n", name, tmp->firstChild->nextSibling->ident);

@@ -2,8 +2,17 @@ char a0;
 int b1, c2, d3;
 int e4;
 
-int main(void) {int abc; return 0;}
+int main(void) {
+    int a;
+    static char bite;
+    return 0;
+}
 
-char abc(void) {char def; return 0;}
+char abc(void) {
+    char def;
+    return 0;
+}
 
-void def(int x, char y) {int a;}
+void def(int x, char y) {
+    int a;
+}

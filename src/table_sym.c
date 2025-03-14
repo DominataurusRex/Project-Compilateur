@@ -58,12 +58,12 @@ int verifHash(Table* table, char* ident) {
 }
 
 
-void addHashVar(Table* table_var, char* ident, char* type) {
+void addHashVar(Table* table_var, char* ident, char* type, int is_static) {
     int hash = functHash(ident);
     Variable* new = initVariable(ident, type);
+    new->is_static = is_static;
     new->suiv = table_var->lst_tab[hash];
     table_var->lst_tab[hash] = new;
-    
 }
 
 
