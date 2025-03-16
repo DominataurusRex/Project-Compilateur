@@ -11,6 +11,7 @@ extern Node* root;
 extern FILE* yyin;
 extern TableCeption* table_ception;
 char* file_name;
+int error_flag = 0;
 int show_tree;
 int show_symtabs;
 
@@ -88,7 +89,6 @@ int getFile(int argc, char** argv) {
     return 0;
 }
 
-
 int main(int argc, char **argv) {
     if (getOption(argc, argv)) return 0;
     if (getFile(argc, argv)) return 1;
@@ -96,14 +96,15 @@ int main(int argc, char **argv) {
     fprintf(stdout, "%d\n", value);
     if (!value) {
         if (show_tree) printTree(root);
-        
         fillTableCeption();
+        if (error_flag) return 2;
         if (show_symtabs) showCeption(table_ception);
-        deleteTableCeption(table_ception);
+        calcType();
         /*
         createNasm();
         */
         deleteTree(root);
+        deleteTableCeption(table_ception);
         fclose(yyin);
     }
     return 0;

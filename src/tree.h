@@ -41,6 +41,8 @@ typedef struct Node {
     char* ident;
     int num;
     char byte;
+    int line;
+    int column;
 } Node;
 
 Node *makeNode(label_t label);

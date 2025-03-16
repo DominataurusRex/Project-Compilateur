@@ -5,27 +5,28 @@
 
 
 /**
- * Représente une variable
+ * Représente un identifiant de fonction ou de variable.
  */
-typedef struct variable{
-    char * id;                  // Nom de la variable 
-    char * type;                // Type de la variable 
-    int is_static;              // Si variable static
-    struct variable * suiv;     // Variable suivante (utilisée dans le cas d'une collision)
+typedef struct identifier{
+    char * id;                  // Nom de l'identifiant 
+    char * type;                // Type de l'identifiant 
+    int is_used;                // Si l'identifiant est utilise
+    int is_static;              // -> Variable: si elle est static ou non
+    struct identifier * suiv;     // L'identifiant suivante (utilisée dans le cas d'une collision)
     struct table* local_var;    // Hash des variables locales
-} Variable;
+} Identifier;
 
 
 /**
- * Représente une table de hash pour des variables
+ * Représente une table de hash pour les identifiants.
  */
 typedef struct table {
-    struct variable* lst_tab[TAILLE];   // Hash des variable
+    struct identifier* lst_tab[TAILLE];   // Hash des identifiants
 } Table;
 
 
 /**
- * Représente les tables de hash du programme
+ * Représente les tables de hash du programme.
  */
 typedef struct tableCeption {
     struct table* global_var;        // Table variable global
@@ -33,39 +34,71 @@ typedef struct tableCeption {
 } TableCeption;
 
 
+/**
+ * Initialise la structure.
+ * @return L'adresse de la structure
+ */
 TableCeption* initTableCeption();
 
-void addHashVar(Table* table_var, char* ident, char* type, int is_static);
 
-Table* addHashFunct(Table* table_funct, char* ident, char* type);
+/**
+ * Permet de liberer la memoire allouee pour `table`.
+ * @param table La table des symboles
+ */
+void deleteTable(Table* table);
 
-int verifHash(Table* table, char* ident);
 
-void deleteVar(Variable* var);
-
+/**
+ * Permet de liberer la memoire allouee pour `table_ception`.
+ * @param table_ception La structure `TableCeption`
+ */
 void deleteTableCeption(TableCeption* table_ception);
 
+
+/**
+ * Rajoute une variable dans `table_var`.
+ * @param table_var La table des symboles  de variable
+ * @param ident L'id de la variable
+ * @param type Le type de la variable
+ * @param is_static Si la variable est static (0/1)
+ */
+void addHashVar(Table* table_var, char* ident, char* type, int is_static);
+
+
+/**
+ * Rajoute une fonction dans `table_funct`.
+ * @param table_funct La table des symboles de fonction
+ * @param ident L'id de la fonction
+ * @param type Le type de la fonction
+ */
+Table* addHashFunct(Table* table_funct, char* ident, char* type);
+
+
+/**
+ * Renvoie l'adresse de l'identifiant correspondant a `ident`
+ * @param table Latable dans laquelle chercher
+ * @param ident L'id de l'identifiant
+ * @return L'adresse si il existe sinon `NULL`
+ */
+Identifier* getHashVar(Table* table, char* ident);
+
+
+Identifier* getHashVarInFunct(TableCeption* table_ception, char* ident_funct, char* ident_var);
+
+
+/**
+ * Verifie la presence de l'id `ident` dans `table`.
+ * @param table La table des symboles
+ * @param ident L'id a rechercher
+ * @return Presence (1) ou non (0)
+ */
+int verifHash(Table* table, char* ident);
+
+
+/**
+ * Permet d'afficher dans la sortie standard le contenu de `table_ception`.
+ * @param table_ception La structure `TableCeptin`
+ */
 void showCeption(TableCeption* table_ception);
 
-
-
-
-void showTable(Table* table);
-
-
-/*
-typedef struct {
-    Variable var;
-    int param; //vaut 1 si la varaible est un paramètre de fonction
-    void * adr; //adresse de la variable
-} Hash_var;
-
-typedef struct {
-    char * id; //nom de la fonction
-    char * type; //type de retour de la fonction
-    Variable * param; //liste de Variable représentant les paramètres de la fonction
-    void * adr; //adresse de la fonction
-} Hash_fct;
-
-*/
 #endif

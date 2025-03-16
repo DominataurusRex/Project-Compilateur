@@ -5,6 +5,9 @@
 #include "tree.h"
 
 extern Node* root;
+extern TableCeption* table_ception;
+extern char* file_name;
+extern int error_flag;
 FILE* f;
 
 
@@ -60,4 +63,54 @@ void createNasm() {
         }
     }
     fclose(f);
+}
+
+
+
+
+
+
+void calcTypeExpr(Node* node) {
+    printf("-- %d --\n", node->label);
+}
+
+
+void calcTypeAffect(Node* node, Identifier* funct) {
+    printf("-- %s %s --\n", node->ident, funct->id);
+    Identifier* var = getHashVar(funct->local_var, node->ident);
+    if (!var) {
+        error_flag = 1;
+        fprintf(stderr, "%s:%d:%d: \033[31;1merror:\033[0m ‘%s’ undeclared\n", file_name, node->line, node->column, node->ident);
+        return;
+    }
+}
+
+
+void calcTypeReturn(Node* node, Identifier* funct) {
+
+}
+
+
+void calcType() {
+    Node* temp = root->firstChild;
+    for (; temp != NULL; temp = temp->nextSibling) {
+        if (temp->label == DeclFonct) {
+            Node* expr = temp->firstChild->nextSibling->nextSibling->firstChild;
+            char* name =  temp->firstChild->firstChild->nextSibling->ident;
+            if (!table_ception->global_funct) fprintf(stdout, "C\n");
+            Identifier* funct = getHashVar(table_ception->global_funct, name);
+            for (; expr != NULL; expr = expr->nextSibling) {
+                switch (expr->label) {
+                    case Affect:
+                        calcTypeAffect(expr, funct);
+                        break;
+                    case Return:
+                        calcTypeReturn(expr, funct);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
 }

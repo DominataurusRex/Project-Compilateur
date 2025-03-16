@@ -60,7 +60,7 @@ return                  {yylloc.first_column += 6; return RETURN;}
 
 ">="                    {yylloc.first_column += 2; strcpy(yylval.ident, yytext); return ORDER;}
 
-[ \t\r]+ ; 
+[ \t\r]+ ;              {yylloc.first_column++;}
 <*>\n                   {yylloc.first_line++; yylloc.first_column = 1;}
 <*>.                    {yylloc.first_column++; return yytext[0];}
 %%

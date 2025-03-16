@@ -56,11 +56,15 @@ Declarateurs:
                                                     $$ = $1;
                                                     Node* ident = makeNode(Ident);
                                                     ident->ident = strdup($3);
+                                                    ident->line = @3.first_line;
+                                                    ident->column = @3.first_column;
                                                     addSibling($$, ident);
 }
     |  IDENT                                        {
                                                     $$ = makeNode(Ident);
                                                     $$->ident = strdup($1);
+                                                    $$->line = @1.first_line;
+                                                    $$->column = @1.first_column;
 }
     ;
 
@@ -85,6 +89,8 @@ EnTeteFonct:
                                                     type->ident = strdup($1);
                                                     Node* ident = makeNode(Ident);
                                                     ident->ident = strdup($2);
+                                                    ident->line = @2.first_line;
+                                                    ident->column = @2.first_column;
                                                     addChild($$, type);
                                                     addChild($$, ident);
                                                     addChild($$, $4);
@@ -94,6 +100,8 @@ EnTeteFonct:
                                                     Node* type = makeNode(Void);
                                                     Node* ident = makeNode(Ident);
                                                     ident->ident = strdup($2);
+                                                    ident->line = @2.first_line;
+                                                    ident->column = @2.first_column;
                                                     addChild($$, type);
                                                     addChild($$, ident);
                                                     addChild($$, $4);
@@ -114,6 +122,8 @@ ListTypVar:
                                                     type->ident = strdup($3);
                                                     Node* ident = makeNode(Ident);
                                                     ident->ident = strdup($4);
+                                                    ident->line = @4.first_line;
+                                                    ident->column = @4.first_column;
                                                     addChild($$, type);
                                                     addChild($$, ident);
                                                     addSibling($$, $1);
@@ -124,6 +134,8 @@ ListTypVar:
                                                     type->ident = strdup($1);
                                                     Node* ident = makeNode(Ident);
                                                     ident->ident = strdup($2);
+                                                    ident->line = @2.first_line;
+                                                    ident->column = @2.first_column;
                                                     addChild($$, type);
                                                     addChild($$, ident);
 }
@@ -167,6 +179,8 @@ Instr:
        IDENT '=' Exp ';'                            {
                                                     $$ = makeNode(Affect);
                                                     $$->ident = strdup($1);
+                                                    $$->line = @1.first_line;
+                                                    $$->column = @1.first_column;
                                                     addChild($$, $3);
 }
     |  IF '(' Exp ')' Instr     %prec IF            {
@@ -210,6 +224,8 @@ Instr:
     |  IDENT '(' Arguments  ')' ';'                 {
                                                     $$ = makeNode(Funct);
                                                     $$->ident = strdup($1);
+                                                    $$->line = @1.first_line;
+                                                    $$->column = @1.first_column;
                                                     addChild($$, $3);
 }
     |  RETURN Exp ';'                               {
@@ -279,18 +295,26 @@ F   :  ADDSUB F                                     {
     |  NUM                                          {
                                                     $$ = makeNode(Num);
                                                     $$->num = $1;
+                                                    $$->line = @1.first_line;
+                                                    $$->column = @1.first_column;
 }
     |  CHARACTER                                    {
                                                     $$ = makeNode(Char);
                                                     $$->byte = $1;
+                                                    $$->line = @1.first_line;
+                                                    $$->column = @1.first_column;
 }
     |  IDENT                                        {
                                                     $$ = makeNode(Ident);
                                                     $$->ident = strdup($1);
+                                                    $$->line = @1.first_line;
+                                                    $$->column = @1.first_column;
 }
     |  IDENT '(' Arguments  ')'                     {
                                                     $$ = makeNode(Funct);
                                                     $$->ident = strdup($1);
+                                                    $$->line = @1.first_line;
+                                                    $$->column = @1.first_column;
                                                     addChild($$, $3);
 }
     ;

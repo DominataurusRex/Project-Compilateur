@@ -6,4 +6,6 @@
 
 void createNasm();
 
+void calcType();
+
 #endif

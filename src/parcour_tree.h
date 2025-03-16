@@ -4,6 +4,10 @@
 #include "table_sym.h"
 
 
+/**
+ * Parcour l'arbre lexical pour remplir
+ * la table des symboles
+ */
 void fillTableCeption();
 
 #endif

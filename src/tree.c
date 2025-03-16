@@ -49,6 +49,8 @@ Node *makeNode(label_t label) {
     node->num = 0;
     node->byte = 0;
     node->ident = NULL;
+    node->line = 0;
+    node->column = 0;
     return node;
 }
 
