@@ -230,9 +230,15 @@ Instr:
 }
     |  RETURN Exp ';'                               {
                                                     $$ = makeNode(Return);
+                                                    $$->line =@1.first_line;
+                                                    $$->column = @1.first_column;
                                                     addChild($$, $2);
 }
-    |  RETURN ';'                                   {$$ = makeNode(Return);}
+    |  RETURN ';'                                   {
+                                                    $$ = makeNode(Return);
+                                                    $$->line =@1.first_line;
+                                                    $$->column = @1.first_column;
+}
     |  '{' SuiteInstr '}'                           {$$ = $2;}
     |  ';'                                          {$$ = NULL;}
     ;
@@ -334,7 +340,7 @@ ListExp:
 void yyerror(char* msg) {
     fprintf(
         stderr,
-        "%s:%d:%d: \033[31;1merror\033[0m %s \033[1m‘%s’\033[0m\n",
+        "%s:%d:%d: \033[31;1merror:\033[0m %s \033[1m‘%s’\033[0m\n",
         file_name,
         yylloc.first_line,
         yylloc.first_column,

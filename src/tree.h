@@ -19,15 +19,15 @@ typedef enum {
     UnOperator,
     BiOperator,     // 16
     Negate,
-    Order,
+    Order,          // 18
     Compar,
-    Or,
+    Or,             // 20
     And,
-    Equal,
+    Equal,          // 22
     While,
-    If,
+    If,             // 24
     Else,
-    Cond,
+    Cond,           // 26
     Do
     /* list all other node labels, if any */
     /* The list must coincide with the string array in tree.c */
