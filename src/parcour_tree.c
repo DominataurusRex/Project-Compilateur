@@ -8,6 +8,7 @@ TableCeption* table_ception;
 extern Node* root;
 extern char* file_name;
 extern int error_flag;
+int start_flag;
 
 
 /**
@@ -29,7 +30,7 @@ void parcourFunctionVar(Table* table, Node* node) {
                         error_flag = 1;
                         fprintf(
                             stderr,
-                            "%s:%d:%d \033[31;1merror:\033[0m redefinition of ‘%s’\n",
+                            "\033[1m%s:%d:%d \033[31;1merror:\033[0m redefinition of ‘%s’\n",
                             file_name,
                             temp->line,
                             temp->column,
@@ -58,6 +59,7 @@ Table* getEnTeteFunct(Node* node) {
         printf("Error dupli funct %s\n", name);
         exit(1);
     }
+    if (!strcmp(name, "main")) start_flag = 1;
     Table* table = addHashFunct(table_ception->global_funct, name, en_tete->label == Void? "void": en_tete->ident);
     Node* tmp = en_tete->nextSibling->nextSibling;
     // printf("Ajout funct %s\n", name);
@@ -67,7 +69,7 @@ Table* getEnTeteFunct(Node* node) {
             error_flag = 1;
             fprintf(
                 stderr,
-                "%s:%d:%d \033[31;1merror:\033[0m redefinition of ‘%s’\n",
+                "\033[1m%s:%d:%d \033[31;1merror:\033[0m redefinition of ‘%s’\n",
                 file_name,
                 tmp->firstChild->nextSibling->line,
                 tmp->firstChild->nextSibling->column,

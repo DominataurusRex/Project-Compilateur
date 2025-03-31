@@ -97,9 +97,9 @@ int main(int argc, char **argv) {
     if (!value) {
         if (show_tree) printTree(root);
         fillTableCeption();
+        calcType();
         if (error_flag) return 2;
         if (show_symtabs) showCeption(table_ception);
-        calcType();
         /*
         createNasm();
         */

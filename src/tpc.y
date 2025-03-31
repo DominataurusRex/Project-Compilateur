@@ -340,7 +340,7 @@ ListExp:
 void yyerror(char* msg) {
     fprintf(
         stderr,
-        "%s:%d:%d: \033[31;1merror:\033[0m %s \033[1m‘%s’\033[0m\n",
+        "\033[1m%s:%d:%d: \033[31;1merror:\033[0m %s \033[1m‘%s’\033[0m\n",
         file_name,
         yylloc.first_line,
         yylloc.first_column,
