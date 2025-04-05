@@ -10,7 +10,6 @@ extern char* file_name;
 extern int error_flag;
 extern int start_flag;
 FILE* f;
-int f;
 
 
 void subNasm(Node* node) {

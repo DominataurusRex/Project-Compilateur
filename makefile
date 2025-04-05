@@ -26,6 +26,13 @@ obj/$(PARSER).tab.c obj/$(PARSER).tab.h &: src/$(PARSER).y
 	mkdir obj -p
 	bison -d -o obj/$(PARSER).tab.c $<
 
+
+nasm: bin/_anonymous.asm
+	mkdir obj -p
+	nasm -f elf64 bin/_anonymous.asm -o obj/_anonymous.o
+	gcc -o bin/_anonymous obj/_anonymous.o -no-pie -nostartfiles
+
+
 clean:
 	rm obj -rf
 
