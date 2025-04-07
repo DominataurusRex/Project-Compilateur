@@ -37,12 +37,52 @@ void parcourFunctionVar(Table* table, Node* node) {
                             temp->ident
                         );
                     }
-                    addHashVar(table, temp->ident, start->ident, start->label == StaticType? 1: 0);
+                    addHashVar(table, temp->ident, start->ident, "Variable", start->label == StaticType? 1: 0);
                 }
             }
             return;
         }
     }
+}
+
+
+int fillTabParam(Identifier*** tab_param, Node* node, int current_size) {
+    fprintf(stderr, "1 Hey\n");
+    if (current_size == 0 && node->firstChild->label == Void) return 0;
+    fprintf(stderr, "2 Hey\n");
+    if (!node) {
+    fprintf(stderr, "3 Hey %d\n", current_size);
+        *tab_param = (Identifier**) malloc(sizeof(Identifier*) * current_size);
+        if (!tab_param) exit(3);
+        return current_size;
+    }
+    int size = fillTabParam(tab_param, node->nextSibling, current_size + 1);
+    fprintf(stderr, "4 Hey %d\n", current_size);
+    char* adress;
+    switch (current_size)
+    {
+    case 0:
+        adress = "rdi";
+        break;
+    case 1:
+        adress = "rsi";
+        break;
+    case 2:
+        adress = "rdx";
+        break;
+    case 3:
+        adress = "rcx";
+        break;
+    case 4:
+        adress = "r8";
+        break;
+    case 5:
+        adress = "r9";
+    default:
+        sprintf(adress, "[rbp - %d]", (size - current_size) * 8);
+    }
+    *(tab_param)[current_size] = initVariable(node->firstChild->nextSibling->ident, node->firstChild->ident, adress);
+    return size;
 }
 
 
@@ -63,6 +103,13 @@ Table* getEnTeteFunct(Node* node) {
     Table* table = addHashFunct(table_ception->global_funct, name, en_tete->label == Void? "void": en_tete->ident);
     Node* tmp = en_tete->nextSibling->nextSibling;
     // printf("Ajout funct %s\n", name);
+    /*
+    Identifier** tab_param;
+    int size = fillTabParam(&tab_param, tmp, 0);
+    for (int i = 0; i < size; i ++) {
+        fprintf(stdout, "--> %s\n", tab_param[i]->id);
+    }
+    */
     for (; tmp != NULL; tmp = tmp->nextSibling) {
         if (tmp->firstChild->label == Void) break;
         if (verifHash(table, tmp->firstChild->nextSibling->ident) || verifHash(table_ception->global_var, tmp->firstChild->nextSibling->ident)) {
@@ -76,7 +123,7 @@ Table* getEnTeteFunct(Node* node) {
                 tmp->firstChild->nextSibling->ident
             );
         }
-        addHashVar(table, tmp->firstChild->nextSibling->ident, tmp->firstChild->ident, 0);
+        addHashVar(table, tmp->firstChild->nextSibling->ident, tmp->firstChild->ident, "Param", 0);
         // printf("%s Ajout var %s\n", name, tmp->firstChild->nextSibling->ident);
     }
     return table;

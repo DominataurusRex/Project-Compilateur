@@ -6,17 +6,12 @@
 #include "tree.h"
 
 
-/**
- * Initialise une structure ̀`Identifier`.
- * @param ident L'id de l'identifiant
- * @param type Le type de l'identifiant
- * @return L'adresse de la structure
- */
-Identifier* initVariable(char* ident, char* type) {
+Identifier* initVariable(char* ident, char* type, char* adress) {
     Identifier* new = (Identifier*) malloc(sizeof(Identifier));
-    if (new == NULL) exit(1);
+    if (new == NULL) exit(3);
     new->id = ident;
     new->type = type;
+    new->adress = adress;
     new->is_used = 0;
     new->is_static = 0;
     new->suiv = NULL;
@@ -36,6 +31,8 @@ void deleteVar(Identifier* var) {
     free(var);
     var = NULL;
 }
+
+
 
 
 /**
@@ -86,7 +83,7 @@ void showTableVar(Table* table, int indent) {
             for (int j = 0; j < indent; j++) {
                 fprintf(stdout, "\t");
             }
-            fprintf(stdout, "Bucket %-2d | Type: %-4s | Static: %d | Id: %s\n", i, var->type, var->is_static, var->id);
+            fprintf(stdout, "Bucket %-2d | Adress: %-10s | Type: %-4s | Static: %d | Id: %s\n", i, var->adress, var->type, var->is_static, var->id);
         }
     }
     fprintf(stdout, "\033[0m\n");
@@ -139,9 +136,9 @@ void deleteTableCeption(TableCeption* table_ception) {
 }
 
 
-void addHashVar(Table* table_var, char* ident, char* type, int is_static) {
+void addHashVar(Table* table_var, char* ident, char* type, char* adress, int is_static) {
     int hash = functHash(ident);
-    Identifier* new = initVariable(ident, type);
+    Identifier* new = initVariable(ident, type, adress);
     new->is_static = is_static;
     new->suiv = table_var->lst_tab[hash];
     table_var->lst_tab[hash] = new;
@@ -150,7 +147,7 @@ void addHashVar(Table* table_var, char* ident, char* type, int is_static) {
 
 Table* addHashFunct(Table* table_funct, char* ident, char* type) {
     int hash = functHash(ident);
-    Identifier* new = initVariable(ident, type);
+    Identifier* new = initVariable(ident, type, NULL);
     new->suiv = table_funct->lst_tab[hash];
     table_funct->lst_tab[hash] = new;
     new->local_var = initTableHash();

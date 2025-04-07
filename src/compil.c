@@ -209,8 +209,8 @@ int calcTypeReturn(Node* node, Identifier* funct) {
 void calcTypeInstr(Node* node, Identifier* funct, char* name) {
     Node* instr = node;
     int if_return = 0;
-    int if_main = !strcmp(name, "main");
-    if (if_main) fprintf(f, "_start:\n");
+    //int if_main = !strcmp(name, "main");
+    //if (if_main) fprintf(f, "_start:\n");
     for (; instr != NULL; instr = instr->nextSibling) {
         // Parcour des lignes
         switch (instr->label) {
@@ -226,8 +226,8 @@ void calcTypeInstr(Node* node, Identifier* funct, char* name) {
                 break;
         }
     }
-    if (if_main) fprintf(f, "mov rax, 60\nmov rdi, 0\nsyscall\n");
-    if (strcmp(funct->type, "void") != 0 && !if_return && !if_main) {
+    //if (if_main) fprintf(f, "mov rax, 60\nmov rdi, 0\nsyscall\n");
+    if (strcmp(funct->type, "void") != 0 && !if_return/* && !if_main*/) {
         // TODO (ajouter fin de la fonction au niveau des points d'interrogation)
         fprintf(
             stderr,
@@ -238,6 +238,16 @@ void calcTypeInstr(Node* node, Identifier* funct, char* name) {
 }
 
 
+void writeStart(){
+    fprintf(f,
+        "_start:\n"
+        "call f_main\n"
+        "mov rax, 60\n"
+        "xor rdi, rdi\n"
+        "syscall\n"
+    );
+}
+
 void calcType() {
     f = fopen("bin/_anonymous.asm", "w+");
     if (start_flag) fprintf(f, "global _start\n");
@@ -247,9 +257,12 @@ void calcType() {
             // Parcour de fontion
             Node* expr = temp->firstChild->nextSibling->nextSibling->firstChild;
             char* name =  temp->firstChild->firstChild->nextSibling->ident;
+            fprintf(f, "f_%s:\n", name);
             Identifier* funct = getHashVar(table_ception->global_funct, name);
             calcTypeInstr(expr, funct, name);
+            fprintf(f, "ret\n");
         }
     }
+    if (start_flag) writeStart();
     fclose(f);
 }

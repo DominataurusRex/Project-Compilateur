@@ -3,7 +3,6 @@
 
 #define TAILLE 16
 
-
 /**
  * Représente un identifiant de fonction ou de variable.
  */
@@ -12,8 +11,11 @@ typedef struct identifier{
     char * type;                // Type de l'identifiant 
     int is_used;                // Si l'identifiant est utilise
     int is_static;              // -> Variable: si elle est static ou non
-    struct identifier * suiv;     // L'identifiant suivante (utilisée dans le cas d'une collision)
-    struct table* local_var;    // Hash des variables locales
+    char * adress;              // -> Variable: Adresse relative
+    struct identifier * suiv;   // L'identifiant suivante (utilisée dans le cas d'une collision)
+    struct table* local_var;    // -> Fonction: Hash des variables locales
+    struct identifier ** param; // -> Fonction: Liste des parametres de la fonction
+    int size_alloc;             // -> Fonction: La taille du bloc a allouer pour les locals
 } Identifier;
 
 
@@ -32,6 +34,16 @@ typedef struct tableCeption {
     struct table* global_var;        // Table variable global
     struct table* global_funct;      // Table fonction global
 } TableCeption;
+
+
+/**
+ * Initialise une structure ̀`Identifier`.
+ * @param ident L'id de l'identifiant
+ * @param type Le type de l'identifiant
+ * @param adress L'adresse de l'identifiant
+ * @return L'adresse de la structure
+ */
+Identifier* initVariable(char* ident, char* type, char* adress);
 
 
 /**
@@ -62,7 +74,7 @@ void deleteTableCeption(TableCeption* table_ception);
  * @param type Le type de la variable
  * @param is_static Si la variable est static (0/1)
  */
-void addHashVar(Table* table_var, char* ident, char* type, int is_static);
+void addHashVar(Table* table_var, char* ident, char* type, char* adress, int is_static);
 
 
 /**
