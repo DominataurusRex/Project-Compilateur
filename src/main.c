@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
-#include "compil.h"
+// #include "compil.h"
 #include "parcour_tree.h"
 #include "table_sym.h"
 #include "tree.h"
@@ -11,7 +11,7 @@ extern Node* root;
 extern FILE* yyin;
 extern TableCeption* table_ception;
 char* file_name;
-int error_flag = 0;
+int nb_error = 0;
 int show_tree;
 int show_symtabs;
 
@@ -97,15 +97,16 @@ int main(int argc, char **argv) {
     if (!value) {
         if (show_tree) printTree(root);
         fillTableCeption();
+        /*
         calcType();
         if (error_flag) return 2;
-        if (show_symtabs) showCeption(table_ception);
-        /*
         createNasm();
         */
+        if (show_symtabs) showCeption(table_ception);
         deleteTree(root);
         deleteTableCeption(table_ception);
         fclose(yyin);
+        fprintf(stdout, "Nb error: %d\n", nb_error);
     }
     return 0;
 }

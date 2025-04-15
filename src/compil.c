@@ -7,7 +7,7 @@
 extern Node* root;
 extern TableCeption* table_ception;
 extern char* file_name;
-extern int error_flag;
+extern int nb_error;
 extern int start_flag;
 FILE* f;
 

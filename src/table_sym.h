@@ -3,27 +3,70 @@
 
 #define TAILLE 16
 
+
+typedef struct idVariable {
+    char* id;
+    char* type;
+    int is_static;
+    int is_used;
+    char* adress;
+    struct identifier* suiv;
+} IdVariable;
+
+
+typedef struct idFunction {
+    char* id;
+    char* type;
+    int is_used;
+    struct table* local_var;
+    int nb_param;
+    struct identifier* param;
+    int size_alloc;
+    struct identifier* suiv;
+} IdFunction;
+
+
+typedef enum {
+    VARIABLE,
+    FUNCTION
+} IdType;
+
+
+typedef union data {
+    IdVariable var;
+    IdFunction func;
+} Data;
+
+
+typedef struct identifier {
+    IdType type;
+    Data data;
+} Identifier;
+
+
+
 /**
  * Représente un identifiant de fonction ou de variable.
- */
-typedef struct identifier{
+ 
+typedef struct temp{
     char * id;                  // Nom de l'identifiant 
     char * type;                // Type de l'identifiant 
     int is_used;                // Si l'identifiant est utilise
     int is_static;              // -> Variable: si elle est static ou non
     char * adress;              // -> Variable: Adresse relative
-    struct identifier * suiv;   // L'identifiant suivante (utilisée dans le cas d'une collision)
+    struct temp * suiv;   // L'identifiant suivante (utilisée dans le cas d'une collision)
     struct table* local_var;    // -> Fonction: Hash des variables locales
-    struct identifier ** param; // -> Fonction: Liste des parametres de la fonction
+    struct temp ** param; // -> Fonction: Liste des parametres de la fonction
     int size_alloc;             // -> Fonction: La taille du bloc a allouer pour les locals
-} Identifier;
-
+} Temp;
+*/
 
 /**
  * Représente une table de hash pour les identifiants.
  */
 typedef struct table {
-    struct identifier* lst_tab[TAILLE];   // Hash des identifiants
+    IdType type;
+    Identifier* lst_tab[TAILLE];   // Hash des identifiants
 } Table;
 
 
@@ -45,6 +88,7 @@ typedef struct tableCeption {
  */
 Identifier* initVariable(char* ident, char* type, char* adress);
 
+Identifier* initFunction(char* ident, char* type);
 
 /**
  * Initialise la structure.
@@ -83,7 +127,7 @@ void addHashVar(Table* table_var, char* ident, char* type, char* adress, int is_
  * @param ident L'id de la fonction
  * @param type Le type de la fonction
  */
-Table* addHashFunct(Table* table_funct, char* ident, char* type);
+Identifier* addHashFunct(Table* table_funct, char* ident, char* type);
 
 
 /**
@@ -95,16 +139,14 @@ Table* addHashFunct(Table* table_funct, char* ident, char* type);
 Identifier* getHashVar(Table* table, char* ident);
 
 
-Identifier* getHashVarInFunct(TableCeption* table_ception, char* ident_funct, char* ident_var);
-
 
 /**
  * Verifie la presence de l'id `ident` dans `table`.
  * @param table La table des symboles
  * @param ident L'id a rechercher
- * @return Presence (1) ou non (0)
+ * @return Renvoie la structure `identifier` si presente, NULL sinon
  */
-int verifHash(Table* table, char* ident);
+Identifier* verifHash(Table* table, char* ident);
 
 
 /**

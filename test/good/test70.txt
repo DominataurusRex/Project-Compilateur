@@ -1,9 +1,14 @@
+int g;
+char i, u;
+
+
 int main(void) {
     int a;
+    static char gh;
     a = 45 - 2 - 7 - 8;
     return 0;
 }
 
-void test(void){return;}
+void test(int a){char abc; return;}
 
-int coucou(int a){return a;}
+int coucou(int a, int arg, char sdf, int hug){return a;}

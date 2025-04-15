@@ -7,37 +7,42 @@
 TableCeption* table_ception;
 extern Node* root;
 extern char* file_name;
-extern int error_flag;
+extern int nb_error;
 int start_flag;
 
 
-/**
- * Permet de remplir la table des variables `table`.
- * Si une variable est redefinie, fait passer le flag `error_flag` a 1.
- * @param table La table de symboles des variables
- * @param node Le noeud ayant pour fils des noeuds `DeclVars`
- */
-void parcourFunctionVar(Table* table, Node* node) {
+void fillTableVariable(Table* table, Node* node) {
     Node* start = node->firstChild;
     for (; start != NULL; start = start->nextSibling) {
+        // Cherche le noeud DeclVars
         if (start->label == DeclVars) {
             start = start->firstChild;
-            Node* temp;
+            // Parcour chaque Declvars
             for (; start != NULL; start = start->nextSibling) {
-                temp = start->firstChild;
-                for (; temp != NULL; temp = temp->nextSibling) {
-                    if (verifHash(table, temp->ident) || verifHash(table_ception->global_var, temp->ident)) {
-                        error_flag = 1;
+                Node* cursor = start->firstChild;
+                // Parcour chaque Ident dans start
+                for (; cursor != NULL; cursor = cursor->nextSibling) {
+                    if (verifHash(table, cursor->ident) || verifHash(table_ception->global_var, cursor->ident)) {
+                        nb_error++;
                         fprintf(
                             stderr,
-                            "\033[1m%s:%d:%d \033[31;1merror:\033[0m redefinition of ‘%s’\n",
+                            "\033[1m%s:%d:%d\033[31;1m error:\033[0m redefinition of \033[1m‘%s’\033[0m\n",
                             file_name,
-                            temp->line,
-                            temp->column,
-                            temp->ident
+                            cursor->line,
+                            cursor->column,
+                            cursor->ident
                         );
+                    } else {
+                        if (!strcmp(cursor->ident, "main")) fprintf(
+                            stderr,
+                            "\033[1m%s:%d:%d\033[35;1m warning:\033[0;1m ‘%s’\033[0m is usually a function\n",
+                            file_name,
+                            cursor->line,
+                            cursor->column,
+                            cursor->ident
+                        );
+                        addHashVar(table, cursor->ident, start->ident, "¯\\_(ツ)_/¯", start->label == StaticType);
                     }
-                    addHashVar(table, temp->ident, start->ident, "Variable", start->label == StaticType? 1: 0);
                 }
             }
             return;
@@ -46,106 +51,73 @@ void parcourFunctionVar(Table* table, Node* node) {
 }
 
 
-int fillTabParam(Identifier*** tab_param, Node* node, int current_size) {
-    fprintf(stderr, "1 Hey\n");
-    if (current_size == 0 && node->firstChild->label == Void) return 0;
-    fprintf(stderr, "2 Hey\n");
-    if (!node) {
-    fprintf(stderr, "3 Hey %d\n", current_size);
-        *tab_param = (Identifier**) malloc(sizeof(Identifier*) * current_size);
-        if (!tab_param) exit(3);
-        return current_size;
+int parcourParamFunct(Identifier* funct, Node* cursor, int nb_param) {
+    if (cursor == NULL || cursor->firstChild->label == Void) {
+        funct->data.func.param = (Identifier*) malloc(sizeof(Identifier) * nb_param);
+        if (!funct->data.func.param) exit(3); 
+        return nb_param;
     }
-    int size = fillTabParam(tab_param, node->nextSibling, current_size + 1);
-    fprintf(stderr, "4 Hey %d\n", current_size);
-    char* adress;
-    switch (current_size)
-    {
-    case 0:
-        adress = "rdi";
-        break;
-    case 1:
-        adress = "rsi";
-        break;
-    case 2:
-        adress = "rdx";
-        break;
-    case 3:
-        adress = "rcx";
-        break;
-    case 4:
-        adress = "r8";
-        break;
-    case 5:
-        adress = "r9";
-    default:
-        sprintf(adress, "[rbp - %d]", (size - current_size) * 8);
-    }
-    *(tab_param)[current_size] = initVariable(node->firstChild->nextSibling->ident, node->firstChild->ident, adress);
-    return size;
+    int toto_param = parcourParamFunct(funct, cursor->nextSibling, nb_param + 1);
+    Identifier* var_temp = initVariable(cursor->firstChild->nextSibling->ident, cursor->firstChild->ident, "¯\\_(ツ)_/¯");
+    funct->data.func.param[toto_param - nb_param - 1] = *var_temp;
+    free(var_temp);
+    return toto_param;
 }
 
 
 /**
- * Rajoute la fonction dans la table des fonctions et renvoie la table de ses parametres.
- * Si une fonction/variable est redefinie, fait passer le flag `error_flag` a 1.
- * @param node La racine de la fonction (DeclFonct)
- * @return La table des symboles de ses parametres
+ * Initialise un `identifier` FUNCTION avec le noeud EnTeteFonct
+ * @param head La racine EnTeteFonct
+ * @return L'adresse de `identifier` cree
  */
-Table* getEnTeteFunct(Node* node) {
-    Node* en_tete = node->firstChild->firstChild;       // Position 1er fils EnTeteFonct
-    char* name = en_tete->nextSibling->ident;
-    if (verifHash(table_ception->global_funct, name)) {
-        printf("Error dupli funct %s\n", name);
-        exit(1);
+Identifier* fillEnTeteFunct(Node* head) {
+    Identifier* new = NULL;
+    Node* name = head->firstChild->firstChild->nextSibling;
+    if (verifHash(table_ception->global_var, name->ident)) {
+        // Present dans global_var
+        nb_error++;
+        fprintf(
+            stderr,
+            "\033[1m%s:%d:%d\033[31;1m error:\033[0;1m ‘%s’\033[0m redeclared as different kind of symbol\n",
+            file_name,
+            name->line,
+            name->column,
+            name->ident
+        );
+    } else if (verifHash(table_ception->global_funct, name->ident)) {
+        // Present dans global_funct
+        nb_error++;
+        fprintf(
+            stderr,
+            "\033[1m%s:%d:%d\033[31;1m error:\033[0m redefinition of \033[1m‘%s’\033[0m\n",
+            file_name,
+            name->line,
+            name->column,
+            name->ident
+        );
+    } else {
+        new = addHashFunct(table_ception->global_funct, name->ident, head->firstChild->firstChild->label == Void? "void": head->firstChild->firstChild->ident);
+        new->data.func.nb_param = parcourParamFunct(new, name->nextSibling, 0);
     }
-    if (!strcmp(name, "main")) start_flag = 1;
-    Table* table = addHashFunct(table_ception->global_funct, name, en_tete->label == Void? "void": en_tete->ident);
-    Node* tmp = en_tete->nextSibling->nextSibling;
-    // printf("Ajout funct %s\n", name);
-    /*
-    Identifier** tab_param;
-    int size = fillTabParam(&tab_param, tmp, 0);
-    for (int i = 0; i < size; i ++) {
-        fprintf(stdout, "--> %s\n", tab_param[i]->id);
-    }
-    */
-    for (; tmp != NULL; tmp = tmp->nextSibling) {
-        if (tmp->firstChild->label == Void) break;
-        if (verifHash(table, tmp->firstChild->nextSibling->ident) || verifHash(table_ception->global_var, tmp->firstChild->nextSibling->ident)) {
-            error_flag = 1;
-            fprintf(
-                stderr,
-                "\033[1m%s:%d:%d \033[31;1merror:\033[0m redefinition of ‘%s’\n",
-                file_name,
-                tmp->firstChild->nextSibling->line,
-                tmp->firstChild->nextSibling->column,
-                tmp->firstChild->nextSibling->ident
-            );
-        }
-        addHashVar(table, tmp->firstChild->nextSibling->ident, tmp->firstChild->ident, "Param", 0);
-        // printf("%s Ajout var %s\n", name, tmp->firstChild->nextSibling->ident);
-    }
-    return table;
+    return new;
 }
 
 
-/**
- * Parcour chaque fonction dans l'arbre.
- */
 void parcourFunction() {
     Node* start = root->firstChild;
     for (; start != NULL; start = start->nextSibling) {
         if (start->label == DeclFonct) {
-            Table* table = getEnTeteFunct(start);
-            parcourFunctionVar(table, start);
+            Identifier* new = fillEnTeteFunct(start);
+            fillTableVariable(new->data.func.local_var, start);
         }
     }
 }
 
 
+
 void fillTableCeption() {
     table_ception = initTableCeption();
-    parcourFunctionVar(table_ception->global_var, root);
+    fillTableVariable(table_ception->global_var, root);
     parcourFunction();
+    
 }

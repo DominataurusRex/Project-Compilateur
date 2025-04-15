@@ -9,13 +9,29 @@
 Identifier* initVariable(char* ident, char* type, char* adress) {
     Identifier* new = (Identifier*) malloc(sizeof(Identifier));
     if (new == NULL) exit(3);
-    new->id = ident;
-    new->type = type;
-    new->adress = adress;
-    new->is_used = 0;
-    new->is_static = 0;
-    new->suiv = NULL;
-    new->local_var = NULL;
+    new->type = VARIABLE;
+    new->data.var.id = ident;
+    new->data.var.type = type;
+    new->data.var.is_static = 0;
+    new->data.var.is_used = 0;
+    new->data.var.adress = adress;
+    new->data.var.suiv = NULL;
+    return new;
+}
+
+
+Identifier* initFunction(char* ident, char* type) {
+    Identifier* new = (Identifier*) malloc(sizeof(Identifier));
+    if (new == NULL) exit(3);
+    new->type = FUNCTION;
+    new->data.func.id = ident;
+    new->data.func.type = type;
+    new->data.func.is_used = 0;
+    new->data.func.local_var = NULL;
+    new->data.func.nb_param = 0;
+    new->data.func.param = NULL;
+    new->data.func.size_alloc = 0;
+    new->data.func.suiv = NULL;
     return new;
 }
 
@@ -24,24 +40,31 @@ Identifier* initVariable(char* ident, char* type, char* adress) {
  * Peremt de libere la memoire allouee pour `var`.
  * @param var L'identifiant
  */
-void deleteVar(Identifier* var) {
+void delIdentifier(Identifier* var) {
     if (var == NULL) return;
-    if (var->local_var != NULL) deleteTable(var->local_var);
-    deleteVar(var->suiv);
+    switch (var->type) {
+        case FUNCTION:
+            if (var->data.func.local_var != NULL) deleteTable(var->data.func.local_var);
+            free(var->data.func.param);
+            var->data.func.param = NULL;
+            delIdentifier(var->data.func.suiv);
+            break;
+        case VARIABLE:
+            delIdentifier(var->data.var.suiv);
+    }
     free(var);
     var = NULL;
 }
-
-
 
 
 /**
  * Initialise une structure `Table`.
  * @return L'adresse de la structure
  */
-Table* initTableHash() {
+Table* initTableHash(IdType type) {
     Table* new = (Table*) malloc(sizeof(Table));
     if (new == NULL) exit(1);
+    new->type = type;
     for (int i = 0; i < TAILLE; i ++) {
         new->lst_tab[i] = NULL;
     }
@@ -65,13 +88,29 @@ unsigned int functHash(char* ident) {
 }
 
 
+void showParam(Identifier* funct, int indent) {
+    fprintf(stdout, "\033[35m");
+    for (int j = 0; j < indent; j++) {
+        fprintf(stdout, "--------");
+    }
+    fprintf(stdout, "==============================\n");
+    for (int i = 0; i < funct->data.func.nb_param; i++) {
+        for (int j = 0; j < indent; j++) fprintf(stdout, "\t");
+        fprintf(
+            stdout, "Param %-3d | Adress: %-15s | Type: %-4s | Id %s\n",
+            i, funct->data.func.param[i].data.var.adress, funct->data.func.param[i].data.var.type, funct->data.func.param[i].data.var.id
+        );
+    }
+}
+
+
 /**
  * Permet un affichage de la table des symboles des variables sur la sortie standard.
  * @param table La table a afficher
  * @param indent Le nombre d'indentation pour l'affichage
  */
-void showTableVar(Table* table, int indent) {
-    fprintf(stdout, "\033[32:1m");
+void showTable(Table* table, int indent) {
+    fprintf(stdout, "\033[3%dm", table->type == VARIABLE ? 2: 3);
     for (int j = 0; j < indent; j++) {
         fprintf(stdout, "--------");
     }
@@ -79,49 +118,46 @@ void showTableVar(Table* table, int indent) {
     Identifier* var;
     for (int i = 0; i < TAILLE; i++) {
         var = table->lst_tab[i];
-        for (; var != NULL; var = var->suiv) {
-            for (int j = 0; j < indent; j++) {
-                fprintf(stdout, "\t");
+        switch (table->type)
+        {
+        case VARIABLE:
+            for (; var != NULL; var = var->data.var.suiv) {
+                for (int j = 0; j < indent; j++) fprintf(stdout, "\t");
+                fprintf(
+                    stdout, "Bucket %-2d | Adress: %-15s | Type: %-4s | Static: %d | Id: %s\n",
+                    i, var->data.var.adress, var->data.var.type, var->data.var.is_static, var->data.var.id
+                );
             }
-            fprintf(stdout, "Bucket %-2d | Adress: %-10s | Type: %-4s | Static: %d | Id: %s\n", i, var->adress, var->type, var->is_static, var->id);
+            break;
+        case FUNCTION:
+            for (; var != NULL; var = var->data.func.suiv) {
+                fprintf(stdout, "\033[33m");
+                fprintf(
+                    stdout, "Bucket %-2d | Type: %-4s | Nb_param: %-2d | Id: %s\n",
+                    i, var->data.func.type, var->data.func.nb_param, var->data.func.id
+                );
+                showParam(var, indent + 1);
+                showTable(var->data.func.local_var, indent + 1);
+                fprintf(stdout, "\n");
+            }
         }
     }
-    fprintf(stdout, "\033[0m\n");
-}
-
-
-/**
- * Permet un affichage de la table des symboles des fonctions sur la sortie standard.
- * @param table La table a afficher
- */
-void showTableFunct(Table* table) {
-    fprintf(stdout, "\033[33:1m");
-    fprintf(stdout, "==============================\n");
-    Identifier* var;
-    for (int i = 0; i < TAILLE; i++) {
-        var = table->lst_tab[i];
-        for (; var != NULL; var = var->suiv) {
-            fprintf(stdout, "\033[33:1m");
-            fprintf(stdout, "Bucket %-2d | Type: %-4s | Id: %s\n", i, var->type, var->id);
-            showTableVar(var->local_var, 1);
-            fprintf(stdout, "\033[0m");
-        }
-    }
+    fprintf(stdout, "\033[0m");
 }
 
 
 TableCeption* initTableCeption() {
     TableCeption* new = (TableCeption*) malloc(sizeof(TableCeption));
     if (new == NULL) exit(1);
-    new->global_var = initTableHash();
-    new->global_funct = initTableHash();
+    new->global_var = initTableHash(VARIABLE);
+    new->global_funct = initTableHash(FUNCTION);
     return new;
 }
 
 
 void deleteTable(Table* table) {
     for (int i = 0; i < TAILLE; i++) {
-        deleteVar(table->lst_tab[i]);
+        delIdentifier(table->lst_tab[i]);
     }
     free(table);
     table = NULL;
@@ -139,45 +175,45 @@ void deleteTableCeption(TableCeption* table_ception) {
 void addHashVar(Table* table_var, char* ident, char* type, char* adress, int is_static) {
     int hash = functHash(ident);
     Identifier* new = initVariable(ident, type, adress);
-    new->is_static = is_static;
-    new->suiv = table_var->lst_tab[hash];
+    new->data.var.is_static = is_static;
+    new->data.var.suiv = table_var->lst_tab[hash];
     table_var->lst_tab[hash] = new;
 }
 
 
-Table* addHashFunct(Table* table_funct, char* ident, char* type) {
+Identifier* addHashFunct(Table* table_funct, char* ident, char* type) {
     int hash = functHash(ident);
-    Identifier* new = initVariable(ident, type, NULL);
-    new->suiv = table_funct->lst_tab[hash];
+    Identifier* new = initFunction(ident, type);
+    new->data.func.suiv = table_funct->lst_tab[hash];
     table_funct->lst_tab[hash] = new;
-    new->local_var = initTableHash();
-    return new->local_var;
+    new->data.func.local_var = initTableHash(VARIABLE);
+    return new;
 }
 
 
-Identifier* getHashVar(Table* table, char* ident) {
+Identifier* verifHash(Table* table, char* ident) {
     Identifier* var = table->lst_tab[functHash(ident)];
-    for (; var != NULL; var = var->suiv) {
-        if (!strcmp(ident, var->id)) {
-            return var;
-        }
+    switch (table->type) {
+        case VARIABLE:
+            for (; var != NULL; var = var->data.var.suiv) {
+                if (!strcmp(ident, var->data.var.id)) {
+                    return var;
+                }
+            }
+            return NULL;
+        case FUNCTION:
+            for (; var != NULL; var = var->data.func.suiv) {
+                if (!strcmp(ident, var->data.func.id)) {
+                    return var;
+                }
+            }
     }
     return NULL;
 }
 
 
-int verifHash(Table* table, char* ident) {
-    Identifier* var = table->lst_tab[functHash(ident)];
-    for (; var != NULL; var = var->suiv) {
-        if (!strcmp(ident, var->id)) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-
 void showCeption(TableCeption* table_ception) {
-    showTableVar(table_ception->global_var, 0);
-    showTableFunct(table_ception->global_funct);
+    showTable(table_ception->global_var, 0);
+    fprintf(stdout, "\n");
+    showTable(table_ception->global_funct, 0);
 }
