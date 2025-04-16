@@ -77,8 +77,8 @@ putint:                         ; Parametre rdi
 
 
 getchar:                        ; Retour rax
-    mov rax, 0
-    mov rdi, 0
+    xor rax, rax
+    xor rdi, rdi
     mov rsi, CHAR_BUFF
     mov rdx, 1
     syscall
@@ -86,6 +86,48 @@ getchar:                        ; Retour rax
     mov al, [CHAR_BUFF]
     ret
 
+getint:
+    xor rax, rax
+    xor rdi, rdi
+    mov rsi, INT_BUFF
+    mov rdx, 16
+    syscall
+
+    xor rcx, rcx
+    xor r10, r10
+    mov r8, 1
+    mov r11, 1
+    mov r10b, byte [INT_BUFF]
+
+    cmp r10, '-'
+    jne .loop_getint
+    inc r8
+    mov r11, -1
+    .loop_getint:
+        cmp r8, rax
+        jge .end_getint
+
+        mov r10b, byte [INT_BUFF + r8 - 1]
+        cmp r10, '0'
+        jl .not_valid
+        cmp r10, '9'
+        jg .not_valid
+
+        imul rcx, 10
+        sub r10, '0'
+        add rcx, r10
+
+        inc r8
+        jmp .loop_getint
+    .end_getint:
+        imul rcx, r11
+        mov rax, rcx
+        ret
+
+    .not_valid:
+        mov rax, 60
+        mov rdi, 5
+        syscall
 
 test_funct:
     ;-------------- Variables Local --------------;
@@ -121,7 +163,9 @@ _start:
     and rsp, -16            ; aligne rsp vers le bas (clear les 4 bits de poids faible)
     mov qword [rsp], r11    ; Place rsp dans la Pile
     ;-----------------------;
-    call test_funct
+    call getint
+    mov rbx, rax
+    call show_registers
     ;-----------------------;
     pop rsp                 ; Recupere rsp dans la Pile
     ;-------------- Alignement Pile --------------;
@@ -135,7 +179,7 @@ _start:
     ;---- Ex var global ----;
 
 
-    call show_registers
+    ; call show_registers
 
     mov rax, 60
     xor rdi, rdi
