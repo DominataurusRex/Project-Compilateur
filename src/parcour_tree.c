@@ -11,8 +11,10 @@ extern int nb_error;
 int start_flag;
 
 
-void fillTableVariable(Table* table, Node* node) {
+int fillTableVariable(Table* table, Node* node, int is_global) {
     Node* start = node->firstChild;
+    int toto_mem = 0;
+    char buff[16];
     for (; start != NULL; start = start->nextSibling) {
         // Cherche le noeud DeclVars
         if (start->label == DeclVars) {
@@ -41,27 +43,77 @@ void fillTableVariable(Table* table, Node* node) {
                             cursor->column,
                             cursor->ident
                         );
-                        addHashVar(table, cursor->ident, start->ident, "¯\\_(ツ)_/¯", start->label == StaticType);
+                        if (is_global) {
+                            sprintf(buff, "[%s+%d]", GLOBAL_VAR, toto_mem);
+                            addHashVar(table, cursor->ident, start->ident, buff, start->label == StaticType);
+                            toto_mem += !strcmp(start->ident, "int")? 4: 1;
+                        } else {
+                            toto_mem += !strcmp(start->ident, "int")? 4: 1;
+                            sprintf(buff, "[rbp-%d]", toto_mem);
+                            addHashVar(table, cursor->ident, start->ident, buff, start->label == StaticType);
+                        }
+                       
                     }
                 }
             }
-            return;
+            return toto_mem;
         }
+    }
+    return 0;
+}
+
+
+void getParamAdress(char adress[16], int param_val, char* param_type) {
+    switch (param_val)
+    {
+        case 1: strcpy(adress, !strcmp(param_type, "int")? "edi": "dil"); break;
+        case 2: strcpy(adress, !strcmp(param_type, "int")? "esi": "sil"); break;
+        case 3: strcpy(adress, !strcmp(param_type, "int")? "edx": "dl"); break;
+        case 4: strcpy(adress, !strcmp(param_type, "int")? "ecx": "cl"); break;
+        case 5: strcpy(adress, !strcmp(param_type, "int")? "r8d": "r8b"); break;
+        case 6: strcpy(adress, !strcmp(param_type, "int")? "r9d": "r9b"); break;
+    
+    default:
+        sprintf(adress, "-");
     }
 }
 
 
-int parcourParamFunct(Identifier* funct, Node* cursor, int nb_param) {
-    if (cursor == NULL || cursor->firstChild->label == Void) {
-        funct->data.func.param = (Identifier*) malloc(sizeof(Identifier) * nb_param);
-        if (!funct->data.func.param) exit(3); 
-        return nb_param;
+void parcourParamFunct(Identifier* funct, Node* node) {
+    if (node->firstChild->label == Void) {
+        funct->data.func.nb_param = 0;
+        return;
     }
-    int toto_param = parcourParamFunct(funct, cursor->nextSibling, nb_param + 1);
-    Identifier* var_temp = initVariable(cursor->firstChild->nextSibling->ident, cursor->firstChild->ident, "¯\\_(ツ)_/¯");
-    funct->data.func.param[toto_param - nb_param - 1] = *var_temp;
-    free(var_temp);
-    return toto_param;
+    int nb_param = 0;
+    int size_pile = 0;      // Taille de la pile si parametre dans la pile
+    char adress[16];
+
+    Node* cursor = node;
+    for (; cursor; cursor = cursor->nextSibling) {
+        // Compte le nombre de parametre
+        nb_param++;
+    }
+
+    funct->data.func.param = (Identifier*) malloc(sizeof(Identifier) * nb_param);
+    cursor = node;
+    for (int i = nb_param; i > 0; i--) {
+        // Place les parametres dans la liste
+        getParamAdress(adress, i, cursor->firstChild->ident);
+        Identifier* var_temp = initVariable(cursor->firstChild->nextSibling->ident, cursor->firstChild->ident, adress);
+        funct->data.func.param[i - 1] = *var_temp;
+        free(var_temp);
+        cursor = cursor->nextSibling;
+    }
+
+    for (int j = 6; j < nb_param; j++) {
+        printf("((%s))\n", funct->data.func.param[j].data.var.id);
+        sprintf(adress, "[rbp+%d]", size_pile);
+        funct->data.func.param[j].data.var.adress = (char*) malloc(sizeof(char) * strlen(adress));
+        strcpy(funct->data.func.param[j].data.var.adress, adress);
+        size_pile += !strcmp(funct->data.func.param[j].data.var.type, "int")? 4: 1;
+    }
+    funct->data.func.nb_param = nb_param;
+    return;
 }
 
 
@@ -97,7 +149,7 @@ Identifier* fillEnTeteFunct(Node* head) {
         );
     } else {
         new = addHashFunct(table_ception->global_funct, name->ident, head->firstChild->firstChild->label == Void? "void": head->firstChild->firstChild->ident);
-        new->data.func.nb_param = parcourParamFunct(new, name->nextSibling, 0);
+        parcourParamFunct(new, name->nextSibling);
     }
     return new;
 }
@@ -108,7 +160,7 @@ void parcourFunction() {
     for (; start != NULL; start = start->nextSibling) {
         if (start->label == DeclFonct) {
             Identifier* new = fillEnTeteFunct(start);
-            fillTableVariable(new->data.func.local_var, start);
+            new->data.func.size_alloc = fillTableVariable(new->data.func.local_var, start, 0);
         }
     }
 }
@@ -117,7 +169,7 @@ void parcourFunction() {
 
 void fillTableCeption() {
     table_ception = initTableCeption();
-    fillTableVariable(table_ception->global_var, root);
+    table_ception->size_alloc_var = fillTableVariable(table_ception->global_var, root, 1);
     parcourFunction();
     
 }

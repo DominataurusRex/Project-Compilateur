@@ -2,7 +2,7 @@
 #define _TABLE_SYM_
 
 #define TAILLE 16
-
+#define GLOBAL_VAR "GLOBAL_VAR"
 
 typedef struct idVariable {
     char* id;
@@ -74,8 +74,9 @@ typedef struct table {
  * Représente les tables de hash du programme.
  */
 typedef struct tableCeption {
-    struct table* global_var;        // Table variable global
-    struct table* global_funct;      // Table fonction global
+    struct table* global_var;       // Table variable global
+    struct table* global_funct;     // Table fonction global
+    int size_alloc_var;             // Taille de la memoire a allouer pour les variable global
 } TableCeption;
 
 
@@ -116,9 +117,9 @@ void deleteTableCeption(TableCeption* table_ception);
  * @param table_var La table des symboles  de variable
  * @param ident L'id de la variable
  * @param type Le type de la variable
- * @param is_static Si la variable est static (0/1)
+ * @param info Si la variable est static (0/1)
  */
-void addHashVar(Table* table_var, char* ident, char* type, char* adress, int is_static);
+void addHashVar(Table* table_var, char* ident, char* type, char* adress, int info);
 
 
 /**

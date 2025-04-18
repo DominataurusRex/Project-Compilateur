@@ -3,6 +3,9 @@
 
 #include "table_sym.h"
 
+#define INT_BUFF "INT_BUFF"     // Nom pour le buffer de put/getint
+#define CHAR_BUFF "CHAR_BUFF"   // Nom pour le buffer de put/getchar
+
 
 void createNasm();
 

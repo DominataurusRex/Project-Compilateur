@@ -19,7 +19,6 @@ void subNasm(Node* node) {
     fprintf(f, "pop rdi\n"); //45
     fprintf(f, "sub rdi, rsi\n"); //45-2
     fprintf(f, "push rdi\n"); //43
-
 }
 
 

@@ -4,6 +4,7 @@ char i, u;
 
 int main(void) {
     int a;
+    char j;
     static char gh;
     a = 45 - 2 - 7 - 8;
     return 0;
@@ -11,4 +12,4 @@ int main(void) {
 
 void test(int a){char abc; return;}
 
-int coucou(int a, int arg, char sdf, int hug){return a;}
+int coucou(char a, int arg, char sdf, int hug, char jk, int uno, char kika, int giga, int moi){return a;}

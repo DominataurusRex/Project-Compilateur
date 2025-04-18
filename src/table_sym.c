@@ -14,7 +14,12 @@ Identifier* initVariable(char* ident, char* type, char* adress) {
     new->data.var.type = type;
     new->data.var.is_static = 0;
     new->data.var.is_used = 0;
-    new->data.var.adress = adress;
+    if (strcmp(adress, "-")) {
+        new->data.var.adress = (char*) malloc(sizeof(char) * strlen(adress));
+        strcpy(new->data.var.adress, adress);
+    } else {
+        new->data.var.adress = NULL;
+    }
     new->data.var.suiv = NULL;
     return new;
 }
@@ -133,8 +138,8 @@ void showTable(Table* table, int indent) {
             for (; var != NULL; var = var->data.func.suiv) {
                 fprintf(stdout, "\033[33m");
                 fprintf(
-                    stdout, "Bucket %-2d | Type: %-4s | Nb_param: %-2d | Id: %s\n",
-                    i, var->data.func.type, var->data.func.nb_param, var->data.func.id
+                    stdout, "Bucket %-2d | Type: %-4s | Nb_param: %-2d | Size_alloc: %-2d | Id: %s\n",
+                    i, var->data.func.type, var->data.func.nb_param, var->data.func.size_alloc, var->data.func.id
                 );
                 showParam(var, indent + 1);
                 showTable(var->data.func.local_var, indent + 1);
@@ -151,6 +156,7 @@ TableCeption* initTableCeption() {
     if (new == NULL) exit(1);
     new->global_var = initTableHash(VARIABLE);
     new->global_funct = initTableHash(FUNCTION);
+    new->size_alloc_var = 0;
     return new;
 }
 

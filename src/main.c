@@ -6,6 +6,7 @@
 #include "table_sym.h"
 #include "tree.h"
 
+
 int yyparse(void);
 extern Node* root;
 extern FILE* yyin;
