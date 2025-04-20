@@ -9,6 +9,7 @@ typedef struct idVariable {
     char* type;
     int is_static;
     int is_used;
+    int is_init;
     char* adress;
     struct identifier* suiv;
 } IdVariable;
@@ -132,22 +133,31 @@ Identifier* addHashFunct(Table* table_funct, char* ident, char* type);
 
 
 /**
- * Renvoie l'adresse de l'identifiant correspondant a `ident`
- * @param table Latable dans laquelle chercher
- * @param ident L'id de l'identifiant
+ * Renvoie l'adresse de l'identifier correspondant a `ident` dans la table
+ * @param table La table dans laquelle chercher
+ * @param ident L'id de l'identifier
  * @return L'adresse si il existe sinon `NULL`
  */
-Identifier* getHashVar(Table* table, char* ident);
-
+Identifier* verifHashTable(Table* table, char* ident);
 
 
 /**
- * Verifie la presence de l'id `ident` dans `table`.
- * @param table La table des symboles
- * @param ident L'id a rechercher
- * @return Renvoie la structure `identifier` si presente, NULL sinon
+ * Renvoie l'adresse de l'identifier correspondant a `ident` dans les parametres de la fonction
+ * @param funct La fonction dans laquelle chercher
+ * @param ident L'id de l'identifier
+ * @return L'adresse si il existe sinon `NULL`
  */
-Identifier* verifHash(Table* table, char* ident);
+Identifier* verifHashParam(Identifier* funct, char* ident);
+
+
+/**
+ * Renvoie l'adresse de l'identifier correspondant a `ident` dans les variables globales et dans la fonction
+ * @param global_var La table des variables globales
+ * @param funct La fonction dans laquelle chercher
+ * @param ident L'id de l'identifier
+ * @return L'adresse si il existe sinon `NULL`
+ */
+Identifier* verifHashFunct(Table* global_var, Identifier* funct, char* ident);
 
 
 /**

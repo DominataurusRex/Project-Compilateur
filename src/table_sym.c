@@ -14,6 +14,7 @@ Identifier* initVariable(char* ident, char* type, char* adress) {
     new->data.var.type = type;
     new->data.var.is_static = 0;
     new->data.var.is_used = 0;
+    new->data.var.is_init = 0;
     if (strcmp(adress, "-")) {
         new->data.var.adress = (char*) malloc(sizeof(char) * strlen(adress));
         strcpy(new->data.var.adress, adress);
@@ -197,7 +198,7 @@ Identifier* addHashFunct(Table* table_funct, char* ident, char* type) {
 }
 
 
-Identifier* verifHash(Table* table, char* ident) {
+Identifier* verifHashTable(Table* table, char* ident) {
     Identifier* var = table->lst_tab[functHash(ident)];
     switch (table->type) {
         case VARIABLE:
@@ -215,6 +216,22 @@ Identifier* verifHash(Table* table, char* ident) {
             }
     }
     return NULL;
+}
+
+
+Identifier* verifHashParam(Identifier* funct, char* ident) {
+    for (int i = 0; i < funct->data.func.nb_param; i++) {
+        if (!strcmp(funct->data.func.param[i].data.var.id, ident)) return &funct->data.func.param[i];
+    }
+    return NULL;
+}
+
+
+Identifier* verifHashFunct(Table* global_var, Identifier* funct, char* ident) {
+    Identifier* var = verifHashTable(funct->data.func.local_var, ident);
+    if (!var) var = verifHashParam(funct, ident);
+    if (!var) var = verifHashTable(global_var, ident);
+    return var;
 }
 
 

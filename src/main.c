@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
-// #include "compil.h"
+#include "compil.h"
 #include "parcour_tree.h"
 #include "table_sym.h"
 #include "tree.h"
@@ -13,6 +13,7 @@ extern FILE* yyin;
 extern TableCeption* table_ception;
 char* file_name;
 int nb_error = 0;
+int nb_warning = 0;
 int show_tree;
 int show_symtabs;
 
@@ -94,20 +95,20 @@ int main(int argc, char **argv) {
     if (getOption(argc, argv)) return 0;
     if (getFile(argc, argv)) return 1;
     int value = yyparse();
-    fprintf(stdout, "%d\n", value);
+    fprintf(stdout, "Retour parser: %d\n", value);
     if (!value) {
         if (show_tree) printTree(root);
         fillTableCeption();
-        /*
-        calcType();
-        if (error_flag) return 2;
-        createNasm();
-        */
-        if (show_symtabs) showCeption(table_ception);
+        if (!nb_error) {
+            evalTpc();
+        }
+        if (!nb_error && !nb_warning) {
+            if (show_symtabs) showCeption(table_ception);
+        }
         deleteTree(root);
         deleteTableCeption(table_ception);
         fclose(yyin);
-        fprintf(stdout, "Nb error: %d\n", nb_error);
     }
+    if (nb_error || nb_warning) fprintf(stdout, "\033[31;1mNb error:\033[0m %d\n\033[35;1mNb warning:\033[0m %d\n", nb_error, nb_warning);
     return 0;
 }

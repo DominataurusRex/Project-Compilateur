@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "parcour_tree.h"
-#include "tree.h"
+#include "error.h"
 
 TableCeption* table_ception;
 extern Node* root;
@@ -24,25 +24,10 @@ int fillTableVariable(Table* table, Node* node, int is_global) {
                 Node* cursor = start->firstChild;
                 // Parcour chaque Ident dans start
                 for (; cursor != NULL; cursor = cursor->nextSibling) {
-                    if (verifHash(table, cursor->ident) || verifHash(table_ception->global_var, cursor->ident)) {
-                        nb_error++;
-                        fprintf(
-                            stderr,
-                            "\033[1m%s:%d:%d\033[31;1m error:\033[0m redefinition of \033[1m‘%s’\033[0m\n",
-                            file_name,
-                            cursor->line,
-                            cursor->column,
-                            cursor->ident
-                        );
+                    if (verifHashTable(table, cursor->ident) || verifHashTable(table_ception->global_var, cursor->ident)) {
+                        errorRedefinition(cursor);
                     } else {
-                        if (!strcmp(cursor->ident, "main")) fprintf(
-                            stderr,
-                            "\033[1m%s:%d:%d\033[35;1m warning:\033[0;1m ‘%s’\033[0m is usually a function\n",
-                            file_name,
-                            cursor->line,
-                            cursor->column,
-                            cursor->ident
-                        );
+                        if (!strcmp(cursor->ident, "main")) warningVarMain(cursor);
                         if (is_global) {
                             sprintf(buff, "[%s+%d]", GLOBAL_VAR, toto_mem);
                             addHashVar(table, cursor->ident, start->ident, buff, start->label == StaticType);
@@ -96,18 +81,17 @@ void parcourParamFunct(Identifier* funct, Node* node) {
 
     funct->data.func.param = (Identifier*) malloc(sizeof(Identifier) * nb_param);
     cursor = node;
-    for (int i = nb_param; i > 0; i--) {
+    for (int i = 0; i < nb_param; i++) {
         // Place les parametres dans la liste
-        getParamAdress(adress, i, cursor->firstChild->ident);
+        getParamAdress(adress, nb_param - i, cursor->firstChild->ident);
         Identifier* var_temp = initVariable(cursor->firstChild->nextSibling->ident, cursor->firstChild->ident, adress);
-        funct->data.func.param[i - 1] = *var_temp;
+        funct->data.func.param[i] = *var_temp;
         free(var_temp);
         cursor = cursor->nextSibling;
     }
-
-    for (int j = 6; j < nb_param; j++) {
-        printf("((%s))\n", funct->data.func.param[j].data.var.id);
-        sprintf(adress, "[rbp+%d]", size_pile);
+    for (int j = nb_param - 7; j >= 0; j--) {
+        // Place l'adresse des parametres se trouvant dans la pile
+        sprintf(adress, "%s [rbp+%d]", !strcmp(funct->data.func.param[j].data.var.type, "int")? "dword": "byte", size_pile);
         funct->data.func.param[j].data.var.adress = (char*) malloc(sizeof(char) * strlen(adress));
         strcpy(funct->data.func.param[j].data.var.adress, adress);
         size_pile += !strcmp(funct->data.func.param[j].data.var.type, "int")? 4: 1;
@@ -125,28 +109,12 @@ void parcourParamFunct(Identifier* funct, Node* node) {
 Identifier* fillEnTeteFunct(Node* head) {
     Identifier* new = NULL;
     Node* name = head->firstChild->firstChild->nextSibling;
-    if (verifHash(table_ception->global_var, name->ident)) {
+    if (verifHashTable(table_ception->global_var, name->ident)) {
         // Present dans global_var
-        nb_error++;
-        fprintf(
-            stderr,
-            "\033[1m%s:%d:%d\033[31;1m error:\033[0;1m ‘%s’\033[0m redeclared as different kind of symbol\n",
-            file_name,
-            name->line,
-            name->column,
-            name->ident
-        );
-    } else if (verifHash(table_ception->global_funct, name->ident)) {
+        errorRedefinitionType(name);
+    } else if (verifHashTable(table_ception->global_funct, name->ident)) {
         // Present dans global_funct
-        nb_error++;
-        fprintf(
-            stderr,
-            "\033[1m%s:%d:%d\033[31;1m error:\033[0m redefinition of \033[1m‘%s’\033[0m\n",
-            file_name,
-            name->line,
-            name->column,
-            name->ident
-        );
+        errorRedefinition(name);
     } else {
         new = addHashFunct(table_ception->global_funct, name->ident, head->firstChild->firstChild->label == Void? "void": head->firstChild->firstChild->ident);
         parcourParamFunct(new, name->nextSibling);
@@ -160,7 +128,7 @@ void parcourFunction() {
     for (; start != NULL; start = start->nextSibling) {
         if (start->label == DeclFonct) {
             Identifier* new = fillEnTeteFunct(start);
-            new->data.func.size_alloc = fillTableVariable(new->data.func.local_var, start, 0);
+            if (new) new->data.func.size_alloc = fillTableVariable(new->data.func.local_var, start, 0);
         }
     }
 }

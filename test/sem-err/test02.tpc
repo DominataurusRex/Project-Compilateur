@@ -1,0 +1,11 @@
+/*
+redefinition
+local_var / local_var
+*/
+
+
+int main(void) {
+    int baldur;
+    char baldur;
+    return 6;
+}

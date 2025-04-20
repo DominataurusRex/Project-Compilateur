@@ -1,0 +1,8 @@
+/*
+main is usually a function
+*/
+
+int Hornet(void) {
+    int main;
+    return 0;
+}

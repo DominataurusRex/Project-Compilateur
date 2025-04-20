@@ -10,6 +10,7 @@ void yyerror(char *);
 Node* root = NULL;
 extern char *yytext;
 extern char* file_name;
+extern int nb_error;
 Node* tree;
 %}
 
@@ -338,6 +339,7 @@ ListExp:
 %%
 
 void yyerror(char* msg) {
+    nb_error++;
     fprintf(
         stderr,
         "\033[1m%s:%d:%d: \033[31;1merror:\033[0m %s \033[1m‘%s’\033[0m\n",

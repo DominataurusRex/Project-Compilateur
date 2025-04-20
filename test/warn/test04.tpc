@@ -1,0 +1,11 @@
+/*
+implicite convertion (char <- int)
+Affect var
+*/
+
+int main(void) {
+    char ogrim;
+    int isma;
+    ogrim = isma;
+    return 0;
+}

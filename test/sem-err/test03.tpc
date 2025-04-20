@@ -1,0 +1,12 @@
+/*
+redefinition
+global_var / global_var
+*/
+
+int baldur;
+char baldur;
+
+
+int main(void) {
+    return 6;
+}

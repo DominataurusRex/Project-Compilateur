@@ -1,0 +1,10 @@
+/*
+implicite convertion (char <- int)
+Operation sur un type char
+*/
+
+int main(void) {
+    char fluke;
+    fluke = -'c';
+    return 0;
+}

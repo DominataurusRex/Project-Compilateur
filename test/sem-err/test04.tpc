@@ -1,0 +1,18 @@
+/*
+redefinition
+function / function
+*/
+
+char lost_kin(void) {
+    return 4;
+}
+
+
+int lost_kin(char a) {
+    return 2;
+}
+
+
+int main(void) {
+    return 6;
+}

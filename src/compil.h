@@ -7,8 +7,13 @@
 #define CHAR_BUFF "CHAR_BUFF"   // Nom pour le buffer de put/getchar
 
 
-void createNasm();
+typedef enum {
+    Int_v,          // Type int
+    Char_v,         // Type char
+    None_v          // Probleme de typage
+} type_v;
 
-void calcType();
+
+void evalTpc();
 
 #endif

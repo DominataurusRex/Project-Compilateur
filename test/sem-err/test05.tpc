@@ -1,0 +1,16 @@
+/*
+redeclared as different kind of symbol
+var_global / function
+*/
+
+char lost_kin;
+
+
+int lost_kin(char a) {
+    return 2;
+}
+
+
+int main(void) {
+    return 6;
+}

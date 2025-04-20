@@ -1,0 +1,10 @@
+/*
+implicite convertion (char <- int)
+Affect const
+*/
+
+int main(void) {
+    char ogrim;
+    ogrim = 5;
+    return 0;
+}

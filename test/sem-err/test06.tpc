@@ -1,0 +1,9 @@
+/*
+undeclared
+variable
+*/
+
+int main(void) {
+    hegemol = 5;
+    return 0;
+}

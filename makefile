@@ -3,8 +3,7 @@ CFLAGS = -Wall -g -Iobj -Isrc
 PARSER = tpc
 LEXER = tpc_lex
 
-# bin/tpcc: obj/$(LEXER).o obj/$(PARSER).o obj/tree.o obj/table_sym.o obj/main.o obj/parcour_tree.o obj/compil.o
-bin/tpcc: obj/$(LEXER).o obj/$(PARSER).o obj/tree.o obj/table_sym.o obj/main.o obj/parcour_tree.o
+bin/tpcc: obj/$(LEXER).o obj/$(PARSER).o obj/tree.o obj/table_sym.o obj/main.o obj/parcour_tree.o obj/compil.o obj/error.o
 	mkdir bin -p
 	$(CC) -o $@ $^ -lfl
 
