@@ -1,0 +1,14 @@
+/*
+void function return value
+*/
+
+
+void tiso(void) {
+    return 1;
+}
+
+
+int main(void) {
+    tiso();
+    return 0;
+}

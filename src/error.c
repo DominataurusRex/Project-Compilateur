@@ -6,6 +6,31 @@ extern int nb_error;
 extern int nb_warning;
 
 
+void errorIgnoredVoid(Node* node) {
+    fprintf(
+        stderr,
+        "\033[1m%s:%d:%d:\033[31;1m error:\033[0m void value not ignored as it ought to be\n\n",
+        file_name,
+        node->line,
+        node->column
+    );
+    nb_error++;
+}
+
+
+void errorImpliciteDecl(Node* node) {
+    fprintf(
+        stderr,
+        "\033[1m%s:%d:%d:\033[31;1m error:\033[0m implicit declaration of function \033[1m‘%s’\033[0m\n\n",
+        file_name,
+        node->line,
+        node->column,
+        node->ident
+    );
+    nb_error++;
+}
+
+
 void errorRedefinition(Node* node) {
     fprintf(
         stderr,
@@ -32,6 +57,32 @@ void errorRedefinitionType(Node* node) {
 }
 
 
+void errorTooFewArgs(Node* node) {
+    fprintf(
+        stderr,
+        "\033[1m%s:%d:%d:\033[31;1m error:\033[0m too few arguments to function ‘%s’\033[0m\n\n",
+        file_name,
+        node->line,
+        node->column,
+        node->ident
+    );
+    nb_error++;
+}
+
+
+void errorTooManyArgs(Node* node) {
+    fprintf(
+        stderr,
+        "\033[1m%s:%d:%d:\033[31;1m error:\033[0m too many arguments to function ‘%s’\033[0m\n\n",
+        file_name,
+        node->line,
+        node->column,
+        node->ident
+    );
+    nb_error++;
+}
+
+
 void errorUndeclared(Node* node) {
     fprintf(
         stderr, "%s:%d:%d: \033[31;1merror:\033[0;1m ‘%s’\033[0m undeclared (first use in this function)\n\n",
@@ -44,13 +95,54 @@ void errorUndeclared(Node* node) {
 }
 
 
-void warningImpliciteConvert(Node* node) {
+void warningControlReaches(Node* node) {
     fprintf(
+        stderr, "\033[1m%s:%d:%d:\033[35;1m warning:\033[0m control reaches end of non-void function\n\n",
+        file_name,
+        node->line,
+        node->column
+    );
+    nb_warning++;
+}
+
+
+void warningImpliciteConvert(Node* node, char* param) {
+    if (!param) fprintf(
         stderr, "\033[1m%s:%d:%d:\033[35;1m warning:\033[0m implicite convertion \033[1m‘%s’\033[0m (char <- int)\n\n",
         file_name,
         node->line,
         node->column,
         node->ident
+    );
+    else fprintf(
+        stderr, "\033[1m%s:%d:%d:\033[35;1m warning:\033[0m implicite convertion of arguments \033[1m‘%s’\033[0m (char <- int) in function \033[1m‘%s’\033[0m\n\n",
+        file_name,
+        node->line,
+        node->column,
+        param,
+        node->ident
+    );
+    nb_warning++;
+}
+
+
+void warningRetNoValNoVoid(Node* node) {
+    fprintf(
+        stderr, "\033[1m%s:%d:%d:\033[35;1m warning:\033[0;1m ‘return’\033[0m with no value, in function returning non-void\n\n",
+        file_name,
+        node->line,
+        node->column
+    );
+    nb_warning++;
+}
+
+
+void warningRetValVoid(Node* node) {
+    fprintf(
+        stderr, "\033[1m%s:%d:%d:\033[35;1m warning:\033[0;1m ‘return’\033[0m with a value, in function returning void\n\n",
+        file_name,
+        node->line,
+        node->column
     );
     nb_warning++;
 }

@@ -6,12 +6,31 @@
 #include "tree.h"
 
 
+char* convertTypeVChar(type_v type) {
+    switch (type)
+    {
+    case Int_v: return "int";
+    case Char_v: return "char";
+    case Void_v: return "void";
+    default: return "none";
+    }
+}
+
+
+type_v convertCharTypeV(char* type) {
+    if (!strcmp(type, "int")) return Int_v;
+    if (!strcmp(type, "char")) return Char_v;
+    if (!strcmp(type, "void")) return Void_v;
+    return None_v;
+}
+
+
 Identifier* initVariable(char* ident, char* type, char* adress) {
     Identifier* new = (Identifier*) malloc(sizeof(Identifier));
     if (new == NULL) exit(3);
     new->type = VARIABLE;
     new->data.var.id = ident;
-    new->data.var.type = type;
+    new->data.var.type = convertCharTypeV(type);
     new->data.var.is_static = 0;
     new->data.var.is_used = 0;
     new->data.var.is_init = 0;
@@ -31,7 +50,7 @@ Identifier* initFunction(char* ident, char* type) {
     if (new == NULL) exit(3);
     new->type = FUNCTION;
     new->data.func.id = ident;
-    new->data.func.type = type;
+    new->data.func.type = convertCharTypeV(type);
     new->data.func.is_used = 0;
     new->data.func.local_var = NULL;
     new->data.func.nb_param = 0;
@@ -104,7 +123,10 @@ void showParam(Identifier* funct, int indent) {
         for (int j = 0; j < indent; j++) fprintf(stdout, "\t");
         fprintf(
             stdout, "Param %-3d | Adress: %-15s | Type: %-4s | Id %s\n",
-            i, funct->data.func.param[i].data.var.adress, funct->data.func.param[i].data.var.type, funct->data.func.param[i].data.var.id
+            i,
+            funct->data.func.param[i].data.var.adress,
+            convertTypeVChar(funct->data.func.param[i].data.var.type),
+            funct->data.func.param[i].data.var.id
         );
     }
 }
@@ -131,7 +153,11 @@ void showTable(Table* table, int indent) {
                 for (int j = 0; j < indent; j++) fprintf(stdout, "\t");
                 fprintf(
                     stdout, "Bucket %-2d | Adress: %-15s | Type: %-4s | Static: %d | Id: %s\n",
-                    i, var->data.var.adress, var->data.var.type, var->data.var.is_static, var->data.var.id
+                    i,
+                    var->data.var.adress,
+                    convertTypeVChar(var->data.var.type),
+                    var->data.var.is_static,
+                    var->data.var.id
                 );
             }
             break;
@@ -140,7 +166,11 @@ void showTable(Table* table, int indent) {
                 fprintf(stdout, "\033[33m");
                 fprintf(
                     stdout, "Bucket %-2d | Type: %-4s | Nb_param: %-2d | Size_alloc: %-2d | Id: %s\n",
-                    i, var->data.func.type, var->data.func.nb_param, var->data.func.size_alloc, var->data.func.id
+                    i,
+                    convertTypeVChar(var->data.func.type),
+                    var->data.func.nb_param,
+                    var->data.func.size_alloc,
+                    var->data.func.id
                 );
                 showParam(var, indent + 1);
                 showTable(var->data.func.local_var, indent + 1);

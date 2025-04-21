@@ -1,5 +1,5 @@
 /*
-implicite convertion (char <- int)
+Implicite conversion (char <- int)
 Affect const
 */
 

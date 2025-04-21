@@ -41,15 +41,29 @@ cleanall:
 	rm bin -rf
 
 
-testG:
+testGood:
 	@for file in test/good/*; do \
 		echo "Traitement $$file"; \
-		./bin/tpcas < "$$file"; \
+		./bin/tpcc < "$$file"; \
 	done
 
 
-testB:
+testSem:
+	@for file in test/sem-err/*; do \
+		echo "Traitement $$file"; \
+		./bin/tpcc < "$$file"; \
+	done
+
+
+testSyn:
 	@for file in test/syn-err/*; do \
 		echo "Traitement $$file"; \
-		./bin/tpcas < "$$file"; \
+		./bin/tpcc < "$$file"; \
+	done
+
+
+testWarn:
+	@for file in test/warn/*; do \
+		echo "Traitement $$file"; \
+		./bin/tpcc < "$$file"; \
 	done

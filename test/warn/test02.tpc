@@ -1,6 +1,6 @@
 /*
-uninitialized
-variable
+Uninitialized
+Variable
 */
 
 int main(void) {

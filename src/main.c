@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
         if (!nb_error) {
             evalTpc();
         }
-        if (!nb_error && !nb_warning) {
+        if (!nb_error) {
             if (show_symtabs) showCeption(table_ception);
         }
         deleteTree(root);

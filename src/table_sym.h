@@ -4,9 +4,18 @@
 #define TAILLE 16
 #define GLOBAL_VAR "GLOBAL_VAR"
 
+
+typedef enum {
+    Int_v,          // Type int
+    Char_v,         // Type char
+    Void_v,         // Type void
+    None_v          // Probleme de typage
+} type_v;
+
+
 typedef struct idVariable {
     char* id;
-    char* type;
+    type_v type;
     int is_static;
     int is_used;
     int is_init;
@@ -17,7 +26,7 @@ typedef struct idVariable {
 
 typedef struct idFunction {
     char* id;
-    char* type;
+    type_v type;
     int is_used;
     struct table* local_var;
     int nb_param;
@@ -43,7 +52,6 @@ typedef struct identifier {
     IdType type;
     Data data;
 } Identifier;
-
 
 
 /**
@@ -81,6 +89,9 @@ typedef struct tableCeption {
 } TableCeption;
 
 
+char* convertTypeV(type_v type);
+
+
 /**
  * Initialise une structure ̀`Identifier`.
  * @param ident L'id de l'identifiant
@@ -90,7 +101,6 @@ typedef struct tableCeption {
  */
 Identifier* initVariable(char* ident, char* type, char* adress);
 
-Identifier* initFunction(char* ident, char* type);
 
 /**
  * Initialise la structure.
@@ -120,7 +130,7 @@ void deleteTableCeption(TableCeption* table_ception);
  * @param type Le type de la variable
  * @param info Si la variable est static (0/1)
  */
-void addHashVar(Table* table_var, char* ident, char* type, char* adress, int info);
+void addHashVar(Table* table_var, char* ident, char* type, char* adress, int is_static);
 
 
 /**

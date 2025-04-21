@@ -1,0 +1,15 @@
+/*
+Too many arguments
+*/
+
+
+int zote(int a, int b) {
+    return 0;
+}
+
+
+int main(void) {
+    int vengefly_king;
+    vengefly_king = zote(3, 4, 5);
+    return 0;
+}

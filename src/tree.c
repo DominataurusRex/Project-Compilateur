@@ -95,7 +95,7 @@ void printTree(Node *node) {
     }
     printf("%s", StringFromLabel[node->label]);
 
-    if (node->ident != NULL) {
+    if (node->ident != NULL && node->label != Return) {
         printf(": %s", node->ident);
     }
 

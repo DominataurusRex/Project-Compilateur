@@ -231,12 +231,14 @@ Instr:
 }
     |  RETURN Exp ';'                               {
                                                     $$ = makeNode(Return);
+                                                    $$->ident = strdup("return");
                                                     $$->line =@1.first_line;
                                                     $$->column = @1.first_column;
                                                     addChild($$, $2);
 }
     |  RETURN ';'                                   {
                                                     $$ = makeNode(Return);
+                                                    $$->ident = strdup("return");
                                                     $$->line =@1.first_line;
                                                     $$->column = @1.first_column;
 }

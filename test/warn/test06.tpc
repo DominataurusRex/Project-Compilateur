@@ -1,0 +1,16 @@
+/*
+Implicite conversion (char <- int)
+Parametre de fonction
+*/
+
+
+int zote(int a, char b) {
+    return 0;
+}
+
+
+int main(void) {
+    int vengefly_king;
+    vengefly_king = zote(3, 4);
+    return 0;
+}

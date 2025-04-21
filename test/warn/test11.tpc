@@ -1,0 +1,15 @@
+/*
+control reache
+*/
+
+
+char tiso(void) {
+
+}
+
+
+int main(void) {
+    int mawlek;
+    mawlek = tiso();
+    return 0;
+}

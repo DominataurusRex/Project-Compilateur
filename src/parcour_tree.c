@@ -91,10 +91,10 @@ void parcourParamFunct(Identifier* funct, Node* node) {
     }
     for (int j = nb_param - 7; j >= 0; j--) {
         // Place l'adresse des parametres se trouvant dans la pile
-        sprintf(adress, "%s [rbp+%d]", !strcmp(funct->data.func.param[j].data.var.type, "int")? "dword": "byte", size_pile);
+        sprintf(adress, "%s [rbp+%d]", funct->data.func.param[j].data.var.type == Int_v? "dword": "byte", size_pile);
         funct->data.func.param[j].data.var.adress = (char*) malloc(sizeof(char) * strlen(adress));
         strcpy(funct->data.func.param[j].data.var.adress, adress);
-        size_pile += !strcmp(funct->data.func.param[j].data.var.type, "int")? 4: 1;
+        size_pile += funct->data.func.param[j].data.var.type == Int_v? 4: 1;
     }
     funct->data.func.nb_param = nb_param;
     return;

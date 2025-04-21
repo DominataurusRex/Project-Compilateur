@@ -1,10 +1,17 @@
 /*
-implicite convertion (char <- int)
-Operation  sur un type char
+control reache
 */
 
+
+void placeSaw(void) {
+    return;
+}
+
+
 int main(void) {
-    char fluke;
-    fluke = (2 * 3) + (4 * (3 + fluke));
+    int pale_king;
+    while (pale_king) {
+        placeSaw();
+    }
     return 0;
 }
