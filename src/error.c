@@ -106,6 +106,17 @@ void warningControlReaches(Node* node) {
 }
 
 
+void warningDivisionZero(Node* node) {
+    fprintf(
+        stderr, "\033[1m%s:%d:%d:\033[35;1m warning:\033[0m division by zero\n\n",
+        file_name,
+        node->line,
+        node->column
+    );
+    nb_warning++;
+}
+
+
 void warningImpliciteConvert(Node* node, char* param) {
     if (!param) fprintf(
         stderr, "\033[1m%s:%d:%d:\033[35;1m warning:\033[0m implicite convertion \033[1m‘%s’\033[0m (char <- int)\n\n",

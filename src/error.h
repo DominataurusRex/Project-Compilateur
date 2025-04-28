@@ -69,6 +69,14 @@ void warningControlReaches(Node* node);
 
 
 /**
+ * Message d'avertissement d'une division par zero
+ * Incremente nb_warning
+ * @param node La node problematique
+ */
+void warningDivisionZero(Node* node);
+
+
+/**
  * Message d'avertissement d'une conversion implicite `char` <- `int`.
  * Incremente nb_warning
  * @param node La node problematique

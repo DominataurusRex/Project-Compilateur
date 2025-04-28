@@ -7,6 +7,12 @@
 #define CHAR_BUFF "CHAR_BUFF"   // Nom pour le buffer de put/getchar
 
 
+typedef struct precalc {
+    int abort;
+    int val;
+} Precalc;
+
+
 void evalTpc();
 
 #endif

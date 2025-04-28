@@ -285,6 +285,8 @@ E   :  E ADDSUB T                                   {
     ;    
 T   :  T DIVSTAR F                                  {
                                                     $$ = makeNode(BiOperator);
+                                                    $$->line = @3.first_line;
+                                                    $$->column = @3.first_column;
                                                     $$->byte = $2;
                                                     addChild($$, $1);
                                                     addChild($$, $3);
