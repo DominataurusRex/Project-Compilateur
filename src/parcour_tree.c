@@ -14,7 +14,7 @@ int start_flag;
 int fillTableVariable(Table* table, Node* node, int is_global) {
     Node* start = node->firstChild;
     int toto_mem = 0;
-    char buff[16];
+    char buff[20];
     for (; start != NULL; start = start->nextSibling) {
         // Cherche le noeud DeclVars
         if (start->label == DeclVars) {
@@ -71,7 +71,7 @@ void parcourParamFunct(Identifier* funct, Node* node) {
     }
     int nb_param = 0;
     int size_pile = 0;      // Taille de la pile si parametre dans la pile
-    char adress[16];
+    char adress[32];
 
     Node* cursor = node;
     for (; cursor; cursor = cursor->nextSibling) {

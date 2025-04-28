@@ -159,7 +159,23 @@ static int evalReturn(Node* instr, Identifier* funct_id) {
 
 
 static int evalWhile(Node* instr, Identifier* funct_id) {
-    
+    evalExpr(instr->firstChild->firstChild, funct_id); //condition while
+    int nb_ret = evalSuiteInstr(instr->firstChild->nextSibling->firstChild, funct_id); //intérieur boucle while
+    return nb_ret;
+}
+
+
+static int evalIf(Node* instr, Identifier* funct_id) {
+    evalExpr(instr->firstChild->firstChild, funct_id);
+    int nb_ret_if = evalSuiteInstr(instr->firstChild->nextSibling->firstChild, funct_id);
+
+    //else existant ou non 
+    if (instr->firstChild->nextSibling->nextSibling){
+        int nb_ret_else = evalSuiteInstr(instr->firstChild->nextSibling->nextSibling->firstChild, funct_id); 
+        return nb_ret_if && nb_ret_else; //regarde si il y a bien un return dans les deux blocs
+    }
+
+    return 0;
 }
 
 
@@ -176,6 +192,7 @@ static int evalInstr(Node* instr, Identifier* funct_id) {
     case Return: return evalReturn(instr, funct_id);
     case Funct: evalFunct(instr, funct_id); return 0;
     case While: return evalWhile(instr, funct_id);
+    case If: return evalIf(instr, funct_id);
     default: fprintf(stdout, "Instr: %d WIP\n", instr->label); return 0;
     }
 }

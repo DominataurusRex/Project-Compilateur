@@ -1,5 +1,5 @@
 /*
-control reache
+control reach
 */
 
 
@@ -10,8 +10,6 @@ void placeSaw(void) {
 
 int main(void) {
     int pale_king;
-    while (pale_king) {
-        placeSaw();
-    }
-    return 0;
+    if (1) return 1;
+    else pale_king = 1;
 }
