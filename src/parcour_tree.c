@@ -24,7 +24,7 @@ int fillTableVariable(Table* table, Node* node, int is_global) {
                 Node* cursor = start->firstChild;
                 // Parcour chaque Ident dans start
                 for (; cursor != NULL; cursor = cursor->nextSibling) {
-                    if (verifHashTable(table, cursor->ident) || verifHashTable(table_ception->global_var, cursor->ident)) {
+                    if (verifHashTable(table, cursor->ident)) {
                         errorRedefinition(cursor);
                     } else {
                         if (!strcmp(cursor->ident, "main")) warningVarMain(cursor);
@@ -48,7 +48,7 @@ int fillTableVariable(Table* table, Node* node, int is_global) {
 }
 
 
-void getParamAdress(char adress[16], int param_val, char* param_type) {
+void getParamAdress(char adress[32], int param_val, char* param_type) {
     switch (param_val)
     {
         case 1: strcpy(adress, !strcmp(param_type, "int")? "edi": "dil"); break;

@@ -8,7 +8,6 @@ extern Node* root;                      // La racine de l'arbre tpc
 extern TableCeption* table_ception;     // Table des symboles
 extern char* file_name;                 // Nom du fichier tpc
 extern int nb_error;                    // Nombre d'erreur
-extern int nb_warning;                  // Nombre de warning
 extern int start_flag;                  // Presence d'un main
 FILE* f_nasm;                           // Fichier sortie nasm
 
@@ -248,16 +247,21 @@ static int evalWhile(Node* instr, Identifier* funct_id) {
 
 
 static int evalIf(Node* instr, Identifier* funct_id) {
-    evalExpr(instr->firstChild->firstChild, funct_id, NULL);
+    Precalc* pre_calc = initPrecalc();
+    int tmp;
+    evalExpr(instr->firstChild->firstChild, funct_id, pre_calc);
     int nb_ret_if = evalSuiteInstr(instr->firstChild->nextSibling->firstChild, funct_id);
 
     //else existant ou non 
     if (instr->firstChild->nextSibling->nextSibling){
         int nb_ret_else = evalSuiteInstr(instr->firstChild->nextSibling->nextSibling->firstChild, funct_id); 
-        return nb_ret_if && nb_ret_else; //regarde si il y a bien un return dans les deux blocs
+        if (!(pre_calc->abort)) tmp = (nb_ret_if || !(pre_calc->val)) && (nb_ret_else || pre_calc->val);
+        else tmp = nb_ret_if && nb_ret_else; //regarde si il y a bien un return dans les deux blocs
+    } else {
+        tmp = !(pre_calc->abort) && pre_calc->val && nb_ret_if;
     }
-
-    return 0;
+    free(pre_calc);
+    return tmp;
 }
 
 

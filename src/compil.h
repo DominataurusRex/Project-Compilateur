@@ -8,8 +8,8 @@
 
 
 typedef struct precalc {
-    int abort;
-    int val;
+    int abort;      //info si on ne peut pas calculer la valeur. 
+    int val;        //valeur du calcul
 } Precalc;
 
 

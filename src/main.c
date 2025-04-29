@@ -91,6 +91,7 @@ int getFile(int argc, char** argv) {
     return 0;
 }
 
+
 int main(int argc, char **argv) {
     if (getOption(argc, argv)) return 0;
     if (getFile(argc, argv)) return 1;
@@ -108,7 +109,10 @@ int main(int argc, char **argv) {
         deleteTree(root);
         deleteTableCeption(table_ception);
         fclose(yyin);
+    } else {
+        return value;
     }
     if (nb_error || nb_warning) fprintf(stdout, "\033[31;1mNb error:\033[0m %d\n\033[35;1mNb warning:\033[0m %d\n", nb_error, nb_warning);
+    if (nb_error) return 2;
     return 0;
 }

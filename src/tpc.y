@@ -189,38 +189,30 @@ Instr:
                                                     Node* cond = makeNode(Cond);
                                                     addChild(cond, $3);
                                                     addChild($$, cond);
-                                                    if ($5 != NULL) {
-                                                        Node* doo = makeNode(Do);
-                                                        addChild(doo, $5);
-                                                        addChild($$, doo);
-                                                    }
+                                                    Node* doo = makeNode(Do);
+                                                    addChild(doo, $5);
+                                                    addChild($$, doo);
 }
     |  IF '(' Exp ')' Instr ELSE Instr  %prec ELSE  {
                                                     $$ = makeNode(If);
                                                     Node* cond = makeNode(Cond);
                                                     addChild(cond, $3);
                                                     addChild($$, cond);
-                                                    if ($5 != NULL) {
-                                                        Node* doo = makeNode(Do);
-                                                        addChild(doo, $5);
-                                                        addChild($$, doo);
-                                                    }
-                                                    if ($7 != NULL) {
-                                                        Node* elsee = makeNode(Else);
-                                                        addChild(elsee, $7);
-                                                        addChild($$, elsee);
-                                                    }
+                                                    Node* doo = makeNode(Do);
+                                                    addChild(doo, $5);
+                                                    addChild($$, doo);
+                                                    Node* elsee = makeNode(Else);
+                                                    addChild(elsee, $7);
+                                                    addChild($$, elsee);
 }
     |  WHILE '(' Exp ')' Instr                      {
                                                     $$ = makeNode(While);
                                                     Node* cond = makeNode(Cond);
                                                     addChild(cond, $3);
                                                     addChild($$, cond);
-                                                    if ($5 != NULL) {
-                                                        Node* doo = makeNode(Do);
-                                                        addChild(doo, $5);
-                                                        addChild($$, doo);
-                                                    }
+                                                    Node* doo = makeNode(Do);
+                                                    addChild(doo, $5);
+                                                    addChild($$, doo);
 }
     |  IDENT '(' Arguments  ')' ';'                 {
                                                     $$ = makeNode(Funct);
