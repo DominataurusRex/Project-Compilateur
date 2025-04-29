@@ -21,11 +21,22 @@ void errorIgnoredVoid(Node* node) {
 void errorImpliciteDecl(Node* node) {
     fprintf(
         stderr,
-        "\033[1m%s:%d:%d:\033[31;1m error:\033[0m implicit declaration of function \033[1m‘%s’\033[0m\n\n",
+        "\033[1m%s:%d:%d:\033[35;1m ~error~ warning:\033[0m implicit declaration of function \033[1m‘%s’\033[0m\n\n",
         file_name,
         node->line,
         node->column,
         node->ident
+    );
+    // nb_error++;
+    nb_warning++;
+}
+
+
+void errorNotMain() {
+    fprintf(
+        stderr,
+        "\033[1m%s:\033[31;1m error:\033[0m \033[1m‘int main(void)’\033[0m function signature not found\n\n",
+        file_name
     );
     nb_error++;
 }

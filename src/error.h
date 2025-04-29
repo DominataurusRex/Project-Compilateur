@@ -21,6 +21,13 @@ void errorImpliciteDecl(Node* node);
 
 
 /**
+ * Message d'erreur pour l'absence de main dans le fichier
+ * Incremente nb_error
+ */
+void errorNotMain();
+
+
+/**
  * Message d'erreur pour une redefinition var/var funct/funct.
  * Incremente nb_error
  * @param node La node problematique

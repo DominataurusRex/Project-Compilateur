@@ -8,11 +8,12 @@ TableCeption* table_ception;
 extern Node* root;
 extern char* file_name;
 extern int nb_error;
-int start_flag;
+int main_flag;
 
 
-int fillTableVariable(Table* table, Node* node, int is_global) {
+int fillTableVariable(Table* table, Node* node, Identifier* lst_param, int nb_param) {
     Node* start = node->firstChild;
+    int is_new;
     int toto_mem = 0;
     char buff[20];
     for (; start != NULL; start = start->nextSibling) {
@@ -22,13 +23,22 @@ int fillTableVariable(Table* table, Node* node, int is_global) {
             // Parcour chaque Declvars
             for (; start != NULL; start = start->nextSibling) {
                 Node* cursor = start->firstChild;
+                is_new = 1;
                 // Parcour chaque Ident dans start
                 for (; cursor != NULL; cursor = cursor->nextSibling) {
                     if (verifHashTable(table, cursor->ident)) {
-                        errorRedefinition(cursor);
+                        is_new = 0;
                     } else {
+                        for (int i = 0; i < nb_param; i++) {
+                            if (!strcmp(cursor->ident, lst_param[i].data.var.id)) {
+                                is_new = 0;
+                            }
+                        }
+                    }
+                    if (!is_new) errorRedefinition(cursor);
+                    else {
                         if (!strcmp(cursor->ident, "main")) warningVarMain(cursor);
-                        if (is_global) {
+                        if (!lst_param) {
                             sprintf(buff, "[%s+%d]", GLOBAL_VAR, toto_mem);
                             addHashVar(table, cursor->ident, start->ident, buff, start->label == StaticType);
                             toto_mem += !strcmp(start->ident, "int")? 4: 1;
@@ -117,6 +127,12 @@ Identifier* fillEnTeteFunct(Node* head) {
         errorRedefinition(name);
     } else {
         new = addHashFunct(table_ception->global_funct, name->ident, head->firstChild->firstChild->label == Void? "void": head->firstChild->firstChild->ident);
+        // Verification signature int main(void)
+        if (!strcmp(name->ident, "main")) {
+            if (head->firstChild->firstChild->label != Void && !strcmp(head->firstChild->firstChild->ident, "int")) {
+                if (head->firstChild->firstChild->nextSibling->nextSibling->firstChild->label == Void) main_flag = 1;
+            }
+        }
         parcourParamFunct(new, name->nextSibling);
     }
     return new;
@@ -128,7 +144,7 @@ void parcourFunction() {
     for (; start != NULL; start = start->nextSibling) {
         if (start->label == DeclFonct) {
             Identifier* new = fillEnTeteFunct(start);
-            if (new) new->data.func.size_alloc = fillTableVariable(new->data.func.local_var, start, 0);
+            if (new) new->data.func.size_alloc = fillTableVariable(new->data.func.local_var, start, new->data.func.param, new->data.func.nb_param);
         }
     }
 }
@@ -136,8 +152,9 @@ void parcourFunction() {
 
 
 void fillTableCeption() {
+    main_flag = 0;
     table_ception = initTableCeption();
-    table_ception->size_alloc_var = fillTableVariable(table_ception->global_var, root, 1);
+    table_ception->size_alloc_var = fillTableVariable(table_ception->global_var, root, NULL, 0);
     parcourFunction();
-    
+    if (!main_flag) errorNotMain();
 }

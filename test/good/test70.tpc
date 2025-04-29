@@ -4,11 +4,6 @@ control reache
 
 
 int main(void) {
-    int a;
-    a = 1;
-    if (a){
-        return 1;
-    }
-    else{
-    }
+    tmp();
+    return 0;
 }
