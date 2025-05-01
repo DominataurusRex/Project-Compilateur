@@ -10,10 +10,18 @@ extern char* file_name;
 extern int nb_error;
 int main_flag;
 
+static const char *ban_funct[] = {
+    "putint",
+    "getint",
+    "putchar",
+    "getchar"
+};
+
 
 int fillTableVariable(Table* table, Node* node, Identifier* lst_param, int nb_param) {
     Node* start = node->firstChild;
     int is_new;
+    int is_not_ban;
     int toto_mem = 0;
     char buff[20];
     for (; start != NULL; start = start->nextSibling) {
@@ -24,8 +32,10 @@ int fillTableVariable(Table* table, Node* node, Identifier* lst_param, int nb_pa
             for (; start != NULL; start = start->nextSibling) {
                 Node* cursor = start->firstChild;
                 is_new = 1;
+                is_not_ban = 1;
                 // Parcour chaque Ident dans start
                 for (; cursor != NULL; cursor = cursor->nextSibling) {
+                    // Verification duplication programme
                     if (verifHashTable(table, cursor->ident)) {
                         is_new = 0;
                     } else {
@@ -36,7 +46,15 @@ int fillTableVariable(Table* table, Node* node, Identifier* lst_param, int nb_pa
                         }
                     }
                     if (!is_new) errorRedefinition(cursor);
-                    else {
+
+                    // Verification redefinition fonction ban
+                    if (nb_param == -1) for (int i = 0; i < V_END; i++) {
+                        if (!strcmp(ban_funct[i], cursor->ident)) {
+                            is_not_ban = 0;
+                        }
+                    }
+                    if (!is_not_ban) errorRedefinitionBan(cursor);
+                    if (is_new && is_not_ban) {
                         if (!strcmp(cursor->ident, "main")) warningVarMain(cursor);
                         if (!lst_param) {
                             sprintf(buff, "[%s+%d]", GLOBAL_VAR, toto_mem);
@@ -127,6 +145,9 @@ Identifier* fillEnTeteFunct(Node* head) {
         errorRedefinition(name);
     } else {
         new = addHashFunct(table_ception->global_funct, name->ident, head->firstChild->firstChild->label == Void? "void": head->firstChild->firstChild->ident);
+        for (int i = 0; i < V_END; i++) {
+            if (!strcmp(ban_funct[i], name->ident)) errorRedefinitionBan(name);
+        }
         // Verification signature int main(void)
         if (!strcmp(name->ident, "main")) {
             if (head->firstChild->firstChild->label != Void && !strcmp(head->firstChild->firstChild->ident, "int")) {
@@ -154,7 +175,7 @@ void parcourFunction() {
 void fillTableCeption() {
     main_flag = 0;
     table_ception = initTableCeption();
-    table_ception->size_alloc_var = fillTableVariable(table_ception->global_var, root, NULL, 0);
+    table_ception->size_alloc_var = fillTableVariable(table_ception->global_var, root, NULL, -1);
     parcourFunction();
     if (!main_flag) errorNotMain();
 }

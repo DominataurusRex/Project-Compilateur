@@ -3,7 +3,14 @@ control reache
 */
 
 
+
+
+void getchar(int a) {
+}
+
+
 int main(void) {
-    tmp();
+    int a;
+    a = test(4);
     return 0;
 }

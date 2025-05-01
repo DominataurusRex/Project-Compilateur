@@ -4,6 +4,15 @@
 #include "table_sym.h"
 
 
+typedef enum {
+    PUTINT,
+    GETINT,
+    PUTCHAR,
+    GETCHAR,
+    V_END
+} BanFunct;
+
+
 /**
  * Parcour l'arbre lexical pour remplir
  * la table des symboles

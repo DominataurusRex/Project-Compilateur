@@ -272,6 +272,7 @@ static int evalIf(Node* instr, Identifier* funct_id) {
  * @return Presence ou non d'un return
  */
 static int evalInstr(Node* instr, Identifier* funct_id) {
+    printf("N %d\n", instr->label);
     switch (instr->label)
     {
     case Affect: return evalAffect(instr, funct_id);
@@ -297,7 +298,8 @@ static void evalDeclFonct(Node* decl_funct) {
     printf("\n- %s\n", funct_id->data.func.id);
     // TODO ecriture en-tete + alloc var local
     Node* instr = decl_funct->firstChild->nextSibling->nextSibling->firstChild;
-    if (funct_id->data.func.type != Void_v && funct_id->data.func.type != None_v && !evalSuiteInstr(instr, funct_id))
+    int return_block = evalSuiteInstr(instr, funct_id);
+    if (funct_id->data.func.type != Void_v && funct_id->data.func.type != None_v && !return_block)
         warningControlReaches(decl_funct->firstChild->firstChild->nextSibling);
     // TODO ecriture nettoyage pile + 'ret'
 }

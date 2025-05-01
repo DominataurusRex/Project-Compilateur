@@ -36,6 +36,14 @@ void errorRedefinition(Node* node);
 
 
 /**
+ * Message d'erreur pour une redefinition d'une fonction deja implementee.
+ * Incremente nb_error
+ * @param node La node problematique
+ */
+void errorRedefinitionBan(Node* node);
+
+
+/**
  * Message d'erreur pour une redefinition var/funct.
  * Incremente nb_error
  * @param node La node problematique

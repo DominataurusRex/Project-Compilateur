@@ -55,6 +55,19 @@ void errorRedefinition(Node* node) {
 }
 
 
+void errorRedefinitionBan(Node* node) {
+    fprintf(
+        stderr,
+        "\033[1m%s:%d:%d:\033[31;1m error:\033[0m redefinition of the already integrated \033[1m‘%s’\033[0m function\n\n",
+        file_name,
+        node->line,
+        node->column,
+        node->ident
+    );
+    nb_error++;
+}
+
+
 void errorRedefinitionType(Node* node) {
     fprintf(
         stderr,
