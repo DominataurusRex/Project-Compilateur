@@ -1,6 +1,7 @@
 ; Gestion de la memoire
 section .data
     format_registers db "rbx:%ld r12:%ld r13:%ld r14:%ld", 10, 0
+    print_int db "%ld", 10, 0
 
 ;-------------- Variable Global --------------;
 section .bss
@@ -41,39 +42,17 @@ putchar:                       ; Parametre rdi
     syscall
     ret
 
-
 putint:                         ; Parametre rdi
-    mov r11, INT_BUFF + 16
-    mov rax, rdi
-    mov rbx, 10
-    cmp rdi, 0
+    push rbp
+    mov rbp, rsp
 
-    jpe .convert_putint         ; Le rend positif
-    neg rax
+    mov rsi, rdi                ;arg dans printf
+    mov rdi, print_int          ;plagiat de show_registers à partir d'ici lol
+    mov rax, 0
+    call printf
 
-    .convert_putint:            ; Boucle de conversion
-        xor rdx, rdx            ; Reset rdx
-        div rbx                 ; rax = /10 // rdx = %10
-        add rdx, '0'            ; conversion
-        dec r11                 ; Decalage du pointeur du buffer
-        mov [r11], dl           ; Deplacmement dans le buffer
-        test rax, rax
-        jnz .convert_putint
-
-    cmp rdi, 0                  ; Rajoute le `-` si negatif
-    jpe .end_putint
-    mov r10, '-'
-    dec r11
-    mov [r11], r10b
-
-    .end_putint:                ; Affiche
-        mov rax, 1
-        mov rdi, 1
-        mov rsi, r11
-        mov rdx, INT_BUFF + 16
-        sub rdx, r11
-        syscall
-        ret
+    pop rbp
+    ret
 
 
 getchar:                        ; Retour rax
@@ -163,8 +142,8 @@ _start:
     and rsp, -16            ; aligne rsp vers le bas (clear les 4 bits de poids faible)
     mov qword [rsp], r11    ; Place rsp dans la Pile
     ;-----------------------;
-    call getint
-    mov rbx, rax
+    mov rdi, 88888
+    call putint
     call show_registers
     ;-----------------------;
     pop rsp                 ; Recupere rsp dans la Pile
