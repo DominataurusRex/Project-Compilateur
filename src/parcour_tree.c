@@ -18,6 +18,36 @@ static const char *ban_funct[] = {
 };
 
 
+void addBanFunct() {
+    Identifier* new, * var_temp;
+    new = addHashFunct(table_ception->global_funct, "putint", "void");
+    new->data.func.param = (Identifier*) malloc(sizeof(Identifier));
+    if (!new->data.func.param) exit(5);
+    var_temp = initVariable("value", "int", "edi");
+    new->data.func.param[0] = *var_temp;
+    new->data.func.nb_param = 1;
+    free(var_temp);
+    
+    new = addHashFunct(table_ception->global_funct, "putchar", "void");
+    new->data.func.param = (Identifier*) malloc(sizeof(Identifier));
+    if (!new->data.func.param) exit(5);
+    var_temp = initVariable("value", "char", "dil");
+    new->data.func.param[0] = *var_temp;
+    new->data.func.nb_param = 1;
+    free(var_temp);
+    
+    new = addHashFunct(table_ception->global_funct, "getint", "int");
+    new->data.func.param = (Identifier*) malloc(sizeof(Identifier) * 0);
+    if (!new->data.func.param) exit(5);
+    new->data.func.nb_param = 0;
+    
+    new = addHashFunct(table_ception->global_funct, "getchar", "char");
+    new->data.func.param = (Identifier*) malloc(sizeof(Identifier) * 0);
+    if (!new->data.func.param) exit(5);
+    new->data.func.nb_param = 0;
+}
+
+
 int fillTableVariable(Table* table, Node* node, Identifier* lst_param, int nb_param) {
     Node* start = node->firstChild;
     int is_new;
@@ -56,7 +86,7 @@ int fillTableVariable(Table* table, Node* node, Identifier* lst_param, int nb_pa
                     if (!is_not_ban) errorRedefinitionBan(cursor);
                     if (is_new && is_not_ban) {
                         if (!strcmp(cursor->ident, "main")) warningVarMain(cursor);
-                        if (!lst_param) {
+                        if (nb_param == -1) {
                             sprintf(buff, "[%s+%d]", GLOBAL_VAR, toto_mem);
                             addHashVar(table, cursor->ident, start->ident, buff, start->label == StaticType);
                             toto_mem += !strcmp(start->ident, "int")? 4: 1;
@@ -79,12 +109,12 @@ int fillTableVariable(Table* table, Node* node, Identifier* lst_param, int nb_pa
 void getParamAdress(char adress[32], int param_val, char* param_type) {
     switch (param_val)
     {
-        case 1: strcpy(adress, !strcmp(param_type, "int")? "edi": "dil"); break;
-        case 2: strcpy(adress, !strcmp(param_type, "int")? "esi": "sil"); break;
-        case 3: strcpy(adress, !strcmp(param_type, "int")? "edx": "dl"); break;
-        case 4: strcpy(adress, !strcmp(param_type, "int")? "ecx": "cl"); break;
-        case 5: strcpy(adress, !strcmp(param_type, "int")? "r8d": "r8b"); break;
-        case 6: strcpy(adress, !strcmp(param_type, "int")? "r9d": "r9b"); break;
+        case 1: strncpy(adress, !strcmp(param_type, "int")? "edi": "dil", 31); break;   // rdi
+        case 2: strncpy(adress, !strcmp(param_type, "int")? "esi": "sil", 31); break;   // rsi
+        case 3: strncpy(adress, !strcmp(param_type, "int")? "edx": "dl", 31); break;    // rdx
+        case 4: strncpy(adress, !strcmp(param_type, "int")? "ecx": "cl", 31); break;    // rcx
+        case 5: strncpy(adress, !strcmp(param_type, "int")? "r8d": "r8b", 31); break;   // r8
+        case 6: strncpy(adress, !strcmp(param_type, "int")? "r9d": "r9b", 31); break;   // r9
     
     default:
         sprintf(adress, "-");
@@ -108,6 +138,7 @@ void parcourParamFunct(Identifier* funct, Node* node) {
     }
 
     funct->data.func.param = (Identifier*) malloc(sizeof(Identifier) * nb_param);
+    if (!funct->data.func.param) exit(5);
     cursor = node;
     for (int i = 0; i < nb_param; i++) {
         // Place les parametres dans la liste
@@ -121,6 +152,7 @@ void parcourParamFunct(Identifier* funct, Node* node) {
         // Place l'adresse des parametres se trouvant dans la pile
         sprintf(adress, "%s [rbp+%d]", funct->data.func.param[j].data.var.type == Int_v? "dword": "byte", size_pile);
         funct->data.func.param[j].data.var.adress = (char*) malloc(sizeof(char) * strlen(adress));
+        if (!funct->data.func.param[j].data.var.adress) exit(5);
         strcpy(funct->data.func.param[j].data.var.adress, adress);
         size_pile += funct->data.func.param[j].data.var.type == Int_v? 4: 1;
     }
@@ -176,6 +208,7 @@ void fillTableCeption() {
     main_flag = 0;
     table_ception = initTableCeption();
     table_ception->size_alloc_var = fillTableVariable(table_ception->global_var, root, NULL, -1);
+    addBanFunct();          // Erreur 139: 14 18
     parcourFunction();
     if (!main_flag) errorNotMain();
 }

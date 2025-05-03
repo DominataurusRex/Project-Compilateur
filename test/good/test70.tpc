@@ -2,15 +2,9 @@
 control reache
 */
 
-
-
-
-void getchar(int a) {
-}
-
+int v;
 
 int main(void) {
-    int a;
-    a = test(4);
-    return 0;
+    v = 67;
+    return v;
 }

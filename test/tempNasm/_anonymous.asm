@@ -136,7 +136,7 @@ test_funct:
     ;-----------------------;
 
     ; -- Allocation  --
-    sub rsp, 8                      ; 8 Octets (ex: char / int)
+    sub rsp, 5                      ; 8 Octets (ex: char / int)
 
     ; -- Affectation --
     mov byte [rbp - 1], 'a'        ; Adresse relative : 4

@@ -200,3 +200,69 @@ Incorrect exit code. Expected 2, found 0
 
 Test 163: Ext-Static - SemErr - 10 
 Incorrect exit code. Expected 2, found 0
+
+
+
+
++------------------------------+
+| 164 tests run/145 tests passed |      Debut nasm / test 14-18 parcour_tree.c -> addBanFunct()
++------------------------------+
+
+
+
+Test 14: Core - Good - 14 
+Incorrect exit code. Expected 0, found 139
+
+Test 15: Core - Good - 15 
+Incorrect exit code. Expected 0, found 139
+
+Test 18: Core - Good - 18 
+Incorrect exit code. Expected 0, found 139
+
+Test 88: Core - SemErr - 05 
+Incorrect exit code. Expected 2, found 0
+
+Test 98: Core - SemErr - 15 
+Incorrect exit code. Expected 2, found 0
+
+Test 103: Core - SemErr - 20 
+Incorrect exit code. Expected 2, found 0
+
+Test 104: Core - SemErr - 21 
+Incorrect exit code. Expected 2, found 0
+
+Test 105: Core - SemErr - 22 
+Incorrect exit code. Expected 2, found 0
+
+Test 106: Core - SemErr - 23 
+Incorrect exit code. Expected 2, found 0
+
+Test 117: Core - SemErr - 34 
+Incorrect exit code. Expected 2, found 0
+
+Test 118: Core - SemErr - 35 
+Incorrect exit code. Expected 2, found 0
+
+Test 119: Core - SemErr - 36 
+Incorrect exit code. Expected 2, found 0
+
+Test 120: Core - SemErr - 37 
+Incorrect exit code. Expected 2, found 0
+
+Test 121: Core - SemErr - 38 
+Incorrect exit code. Expected 2, found 0
+
+Test 122: Core - SemErr - 39 
+Incorrect exit code. Expected 2, found 0
+
+Test 123: Core - SemErr - 40 
+Incorrect exit code. Expected 2, found 0
+
+Test 130: Ext-Static - Good - 07 
+Incorrect exit code. Expected 0, found 139
+
+Test 162: Ext-Static - SemErr - 09 
+Incorrect exit code. Expected 2, found 0
+
+Test 163: Ext-Static - SemErr - 10 
+Incorrect exit code. Expected 2, found 0
