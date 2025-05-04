@@ -82,7 +82,7 @@ int getFile(int argc, char** argv) {
         yyin = fopen(argv[optind], "r");
         if (!yyin) {
             fprintf(stderr, "\033[31;1merror\033[0m file not found \033[1m‘%s’\033[0m\n", argv[optind]);
-            return 1;
+            return 3;
         }
         file_name = argv[optind];
     } else {
@@ -94,7 +94,7 @@ int getFile(int argc, char** argv) {
 
 int main(int argc, char **argv) {
     if (getOption(argc, argv)) return 0;
-    if (getFile(argc, argv)) return 1;
+    if (getFile(argc, argv)) return 3;
     int value = yyparse();
     fprintf(stdout, "Retour parser: %d\n", value);
     if (!value) {

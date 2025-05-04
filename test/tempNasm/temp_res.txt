@@ -266,3 +266,57 @@ Incorrect exit code. Expected 2, found 0
 
 Test 163: Ext-Static - SemErr - 10 
 Incorrect exit code. Expected 2, found 0
+
+
+
++------------------------------+
+| 164 tests run/149 tests passed |      Resolution struture PreCalcul
++------------------------------+
+
+
+
+
+Test 88: Core - SemErr - 05 
+Incorrect exit code. Expected 2, found 0
+
+Test 98: Core - SemErr - 15 
+Incorrect exit code. Expected 2, found 0
+
+Test 103: Core - SemErr - 20 
+Incorrect exit code. Expected 2, found 0
+
+Test 104: Core - SemErr - 21 
+Incorrect exit code. Expected 2, found 0
+
+Test 105: Core - SemErr - 22 
+Incorrect exit code. Expected 2, found 0
+
+Test 106: Core - SemErr - 23 
+Incorrect exit code. Expected 2, found 0
+
+Test 117: Core - SemErr - 34 
+Incorrect exit code. Expected 2, found 0
+
+Test 118: Core - SemErr - 35 
+Incorrect exit code. Expected 2, found 0
+
+Test 119: Core - SemErr - 36 
+Incorrect exit code. Expected 2, found 0
+
+Test 120: Core - SemErr - 37 
+Incorrect exit code. Expected 2, found 0
+
+Test 121: Core - SemErr - 38 
+Incorrect exit code. Expected 2, found 0
+
+Test 122: Core - SemErr - 39 
+Incorrect exit code. Expected 2, found 0
+
+Test 123: Core - SemErr - 40 
+Incorrect exit code. Expected 2, found 0
+
+Test 162: Ext-Static - SemErr - 09 
+Incorrect exit code. Expected 2, found 0
+
+Test 163: Ext-Static - SemErr - 10 
+Incorrect exit code. Expected 2, found 0

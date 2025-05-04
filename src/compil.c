@@ -10,6 +10,7 @@ extern char* file_name;                 // Nom du fichier tpc
 extern int nb_error;                    // Nombre d'erreur
 extern int start_flag;                  // Presence d'un main
 FILE* f_nasm;                           // Fichier sortie nasm
+int nb_label = 0;                       // Nombre de label actuel
 
 // r11 -> r10 -> r9 -> r8 -> rcx -> rdx -> rsi -> rdi -> rax
 
@@ -66,7 +67,12 @@ static type_v evalIdent(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
         var->data.var.type == Int_v? 'd': 'b',
         var->data.var.adress
     );
-    fprintf(f_nasm, "push r11\n");                  // Met dans la pile la valeur
+    fprintf(
+        f_nasm, "sub rsp, %d\nmov %s [rsp], r11%c\n",
+        var->data.var.type == Char_v? 1: 4,
+        var->data.var.type == Char_v? "byte": "dword",
+        var->data.var.type == Char_v? 'b': 'd'
+    );                  // Met dans la pile la valeur
     return var->data.var.type;
 }
 
@@ -114,8 +120,28 @@ static type_v evalFunct(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
  * @return Le type de l'expression
  */
 static type_v evalNegate(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
-    evalExpr(expr->firstChild, funct_id, pre_calc);
-    if (!pre_calc->abort) pre_calc->val = !pre_calc->val;
+    type_v right = evalExpr(expr->firstChild, funct_id, pre_calc);
+    if (pre_calc && !pre_calc->abort) pre_calc->val = !pre_calc->val;
+    int label_if = nb_label;
+    int label_else = nb_label + 1;
+    nb_label += 2;
+    fprintf(
+        f_nasm, "mov r11%c, [rsp]\nadd rsp, %d\n"
+                "cmp r11d, 0\n"
+                "jne .%d_else\n"
+                "mov r11d, 1\n"
+                "jmp .%d_if\n"
+                ".%d_else:\n"
+                "xor r11d, r11d\n"
+                ".%d_if:\n"
+                "sub rsp, 4\nmov dword [rsp], r11d\n",
+        right == Char_v? 'b': 'd',
+        right == Char_v? 1: 4,
+        label_else,
+        label_if,
+        label_else,
+        label_if
+    );
     return Int_v;
 }
 
@@ -129,8 +155,13 @@ static type_v evalNegate(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
  * @return Le type de l'expression
  */
 static type_v evalUnOperator(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
-    evalExpr(expr->firstChild, funct_id, pre_calc);
-    if (!pre_calc->abort && expr->byte == '-') pre_calc->val *= -1; 
+    type_v right = evalExpr(expr->firstChild, funct_id, pre_calc);
+    if (pre_calc && !pre_calc->abort && expr->byte == '-') pre_calc->val *= -1; 
+    if (expr->byte == '-') fprintf(
+        f_nasm, "mov r11%c, [rsp]\nadd rsp, %d\nneg r11\nsub rsp, 4\nmov dword [rsp], r11d\n",
+        right == Char_v? 'b': 'd',
+        right == Char_v? 1: 4
+    );
     return Int_v;
 }
 
@@ -147,24 +178,92 @@ static type_v evalBiOperator(Node* expr, Identifier* funct_id, Precalc* pre_calc
     int is_div = expr->byte == '/' || expr->byte == '%';
     Precalc* pre_left = pre_calc? initPrecalc(): NULL;
     Precalc* pre_right = pre_calc || is_div? initPrecalc(): NULL;
-    evalExpr(expr->firstChild, funct_id, pre_left);
-    evalExpr(expr->firstChild->nextSibling, funct_id, pre_right);
+    type_v right = evalExpr(expr->firstChild->nextSibling, funct_id, pre_right);
+    type_v left = evalExpr(expr->firstChild, funct_id, pre_left);
     if (is_div && !pre_right->abort && !pre_right->val) {
         warningDivisionZero(expr);
-        pre_calc->abort = 1;
+        if (pre_calc) pre_calc->abort = 1;
     }
-    if (pre_calc && !pre_calc->abort) {
-        if (!pre_left->abort && !pre_right->abort) {
-            switch (expr->byte) {
-                case '+': pre_calc->val = pre_left->val + pre_right->val; break;
-                case '-': pre_calc->val = pre_left->val - pre_right->val; break;
-                case '*': pre_calc->val = pre_left->val * pre_right->val; break;
-                case '/': pre_calc->val = pre_left->val / pre_right->val; break;
-                case '%': pre_calc->val = pre_left->val % pre_right->val;
-            }
-        } else {
-            pre_calc->abort = 1;
-        }
+    if (pre_calc && (pre_left->abort || pre_right->abort)) pre_calc->abort = 1;
+
+    int fill_pre_calc = pre_calc && !(pre_calc->abort || pre_left->abort || pre_right->abort);
+    switch (expr->byte) {
+        case '+':
+            if (fill_pre_calc) pre_calc->val = pre_left->val + pre_right->val;
+            if (left == Char_v) fprintf(f_nasm, "xor r10, r10\n");
+            if (right == Char_v) fprintf(f_nasm, "xor r11, r11\n");
+            fprintf(
+                f_nasm, "mov r10%c, [rsp]\nadd rsp, %d\n"
+                        "mov r11%c, [rsp]\nadd rsp, %d\n"
+                        "add r10d, r11d\n"
+                        "sub rsp, 4\nmov dword [rsp], r10d\n",
+                left == Char_v? 'b': 'd',
+                left == Char_v? 1: 4,
+                right == Char_v? 'b': 'd',
+                right == Char_v? 1: 4
+            );
+            break;
+        case '-':
+            if (fill_pre_calc) pre_calc->val = pre_left->val - pre_right->val;
+            if (left == Char_v) fprintf(f_nasm, "xor r10, r10\n");
+            if (right == Char_v) fprintf(f_nasm, "xor r11, r11\n");
+            fprintf(
+                f_nasm, "mov r10%c, [rsp]\nadd rsp, %d\n"
+                        "mov r11%c, [rsp]\nadd rsp, %d\n"
+                        "sub r10d, r11d\n"
+                        "sub rsp, 4\nmov dword [rsp], r10d\n",
+                left == Char_v? 'b': 'd',
+                left == Char_v? 1: 4,
+                right == Char_v? 'b': 'd',
+                right == Char_v? 1: 4
+            );
+            break;
+        case '*':
+            if (fill_pre_calc) pre_calc->val = pre_left->val * pre_right->val;
+            if (left == Char_v) fprintf(f_nasm, "xor r10, r10\n");
+            if (right == Char_v) fprintf(f_nasm, "xor r11, r11\n");
+            fprintf(
+                f_nasm, "mov r10%c, [rsp]\nadd rsp, %d\n"
+                        "mov r11%c, [rsp]\nadd rsp, %d\n"
+                        "imul r10d, r11d\n"
+                        "sub rsp, 4\nmov dword [rsp], r10d\n",
+                left == Char_v? 'b': 'd',
+                left == Char_v? 1: 4,
+                right == Char_v? 'b': 'd',
+                right == Char_v? 1: 4
+            );
+            break;
+        case '/':
+            if (fill_pre_calc) pre_calc->val = pre_left->val / pre_right->val;
+            if (left == Char_v) fprintf(f_nasm, "xor rax, rax\n");
+            if (right == Char_v) fprintf(f_nasm, "xor rbx, rbx\n");
+            fprintf(
+                f_nasm, "xor rdx, rdx\n"
+                        "mov %s, [rsp]\nadd rsp, %d\n"
+                        "mov %s, [rsp]\nadd rsp, %d\n"
+                        "idiv rbx\n"
+                        "sub rsp, 4\nmov dword [rsp], eax\n",
+                left == Char_v? "al": "eax",
+                left == Char_v? 1: 4,
+                right == Char_v? "bl": "ebx",
+                right == Char_v? 1: 4
+            );
+            break;
+        case '%':
+            if (fill_pre_calc) pre_calc->val = pre_left->val % pre_right->val;
+            if (left == Char_v) fprintf(f_nasm, "xor rax, rax\n");
+            if (right == Char_v) fprintf(f_nasm, "xor rbx, rbx\n");
+            fprintf(
+                f_nasm, "xor rdx, rdx\n"
+                        "mov %s, [rsp]\nadd rsp, %d\n"
+                        "mov %s, [rsp]\nadd rsp, %d\n"
+                        "idiv rbx\n"
+                        "sub rsp, 4\nmov dword [rsp], edx\n",
+                left == Char_v? "al": "eax",
+                left == Char_v? 1: 4,
+                right == Char_v? "bl": "ebx",
+                right == Char_v? 1: 4
+            );
     }
     free(pre_left);
     free(pre_right);
@@ -282,8 +381,8 @@ static type_v evalOr(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
 
 static type_v evalExpr(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     switch (expr->label) {
-    case Num: if (pre_calc) pre_calc->val = expr->num; fprintf(f_nasm, "push %d\n", expr->num); return Int_v;
-    case Char: if (pre_calc) pre_calc->val = expr->byte; fprintf(f_nasm, "push '%c'\n", expr->byte); return Char_v;
+    case Num: if (pre_calc) pre_calc->val = expr->num; fprintf(f_nasm, "sub rsp, 4\nmov dword [rsp], %d\n", expr->num); return Int_v;
+    case Char: if (pre_calc) pre_calc->val = expr->byte; fprintf(f_nasm, "sub rsp, 1\nmov byte [rsp], '%c'\n", expr->byte); return Char_v;
     case Ident: return evalIdent(expr, funct_id, pre_calc);
     case Funct: return evalFunct(expr, funct_id, pre_calc);
     case Negate: return evalNegate(expr, funct_id, pre_calc);
@@ -313,8 +412,12 @@ static int evalAffect(Node* instr, Identifier* funct_id) {
     Identifier* left = verifHashFunct(table_ception->global_var, funct_id, instr->ident);
     if (!left) errorUndeclared(instr);
     type_v right = evalExpr(instr->firstChild, funct_id, NULL);
-    fprintf(f_nasm, "pop r11\n");                       // Recuperer la valeur dans la pile
     if (left) {
+        fprintf(
+            f_nasm, "mov r11%c, [rsp]\nadd rsp, %d\n",  // Recuperer la valeur dans la pile
+            right == Char_v? 'b': 'd',
+            right == Char_v? 1: 4
+        );
         left->data.var.is_init = 1;
         if (right == Void_v) {
             errorIgnoredVoid(instr->firstChild);
@@ -323,9 +426,9 @@ static int evalAffect(Node* instr, Identifier* funct_id) {
         if (affect_type == Char_v && right == Int_v) warningImpliciteConvert(instr, NULL);
         fprintf(
             f_nasm, "mov %s %s, r11%c\n",               // Place la valeur recuperer dans la zone memoire
-            affect_type == Int_v? "dword": "byte",
+            affect_type == Char_v? "byte": "dword",
             left->data.var.adress,
-            affect_type == Int_v? 'd': 'b'
+            affect_type == Char_v? 'b': 'd'
         );
     }
     return 0;
@@ -344,7 +447,8 @@ static int evalReturn(Node* instr, Identifier* funct_id) {
     if (funct_id->data.func.type == Void_v && (right == Int_v || right == Char_v)) warningRetValVoid(instr);
     if (funct_id->data.func.type != Void_v && right == Void_v) warningRetNoValNoVoid(instr);
     if (funct_id->data.func.type == Char_v && right == Int_v) warningImpliciteConvert(instr, NULL);
-    if (right != Void_v && right != None_v) fprintf(f_nasm, "pop rax\n");
+    if (right == Char_v) fprintf(f_nasm, "xor rax, rax\nmov al, [rsp]\nadd rsp, 1\n");
+    else if (right != Void_v) fprintf(f_nasm, "mov eax, [rsp]\nadd rsp, 4\n");
     fprintf(f_nasm, "mov rsp, rbp\npop rbp\nret\n");
     return 1;
 }

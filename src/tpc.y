@@ -327,8 +327,8 @@ Arguments:
     ;
 ListExp:
        ListExp ',' Exp                              {
-                                                    $$ = $1;
-                                                    addSibling($$, $3);
+                                                    $$ = $3;
+                                                    addSibling($$, $1);
 }
     |  Exp                                          {$$ = $1;}
     ;

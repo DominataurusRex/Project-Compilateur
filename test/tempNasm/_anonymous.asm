@@ -1,7 +1,7 @@
 ; Gestion de la memoire
 section .data
     format_registers db "rbx:%ld r12:%ld r13:%ld r14:%ld", 10, 0
-    print_int db "%ld", 10, 0
+    print_int db "%d", 10, 0
 
 ;-------------- Variable Global --------------;
 section .bss
@@ -34,28 +34,31 @@ show_registers:
 
 
 putchar:                       ; Parametre rdi
+    push rbp
+    mov rbp, rsp
     mov [CHAR_BUFF], rdi
     mov rax, 1
     mov rdi, 1
     mov rsi, CHAR_BUFF
     mov rdx, 1
     syscall
+    pop rbp
     ret
 
 putint:                         ; Parametre rdi
     push rbp
     mov rbp, rsp
-
-    mov rsi, rdi                ;arg dans printf
+    mov esi, edi                ;arg dans printf
     mov rdi, print_int          ;plagiat de show_registers à partir d'ici lol
     mov rax, 0
     call printf
-
     pop rbp
     ret
 
 
 getchar:                        ; Retour rax
+    push rbp
+    mov rbp, rsp
     xor rax, rax
     xor rdi, rdi
     mov rsi, CHAR_BUFF
@@ -63,9 +66,12 @@ getchar:                        ; Retour rax
     syscall
     xor rax, rax
     mov al, [CHAR_BUFF]
+    pop rbp
     ret
 
 getint:
+    push rbp
+    mov rbp, rsp
     xor rax, rax
     xor rdi, rdi
     mov rsi, INT_BUFF
@@ -106,6 +112,7 @@ getint:
     .not_valid:
         mov rax, 60
         mov rdi, 5
+        pop rbp
         syscall
 
 test_funct:
@@ -133,18 +140,31 @@ test_funct:
     ;-------------- Variables Local --------------;
 
 
+test_f:
+    push rbp
+    mov rbp, rsp
+
+    mov rdi, [rbp + 16]
+    call putint
+    mov rdi, [rbp + 24]
+    call putint
+
+    mov rsp, rbp
+    pop rbp
+    ret
+
+
 
 _start:
-    mov rbx, rsp
     ;-------------- Alignement Pile --------------;
     mov r11, rsp            ; Pointeur de Pile
-    sub rsp, 8              ; Alignement appel fonction
-    and rsp, -16            ; aligne rsp vers le bas (clear les 4 bits de poids faible)
+    sub rsp, 8              ; Alignement appel fonction (alloue de la place y placer rsp)
+    and rsp, -16            ; aligne rsp vers le bas (conserve le multiple de 16)
     mov qword [rsp], r11    ; Place rsp dans la Pile
     ;-----------------------;
-    mov rdi, 88888
-    call putint
-    call show_registers
+    push 34
+    push 43
+    call test_f
     ;-----------------------;
     pop rsp                 ; Recupere rsp dans la Pile
     ;-------------- Alignement Pile --------------;
