@@ -31,6 +31,7 @@ typedef struct idFunction {
     struct table* local_var;
     int nb_param;
     struct identifier* param;
+    int size_param;                 // Taille de la memoire dans la pile des parametres 7 et +
     int size_alloc;
     struct identifier* suiv;
 } IdFunction;

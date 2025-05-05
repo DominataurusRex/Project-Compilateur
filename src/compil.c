@@ -12,7 +12,8 @@ extern int start_flag;                  // Presence d'un main
 FILE* f_nasm;                           // Fichier sortie nasm
 int nb_label = 0;                       // Nombre de label actuel
 
-// r11 -> r10 -> r9 -> r8 -> rcx -> rdx -> rsi -> rdi -> rax
+// Bonus      -> parametre                              -> retour
+// r11 -> r10 -> (r9 -> r8 -> rcx -> rdx -> rsi -> rdi) -> rax
 
 /**
  * Fonction aiguillage des expressions
@@ -83,22 +84,32 @@ static type_v evalIdent(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
  * @param expr La node racine de l'expression
  * @param funct_id L'identifier lie a la fonction en cours d'evaluation
  * @param pre_calc Structure pour gerer le pre-calcul de l'expression (`NULL` inutile, sinon necessaire)
+ * @param is_expr Si c'est l'instruction ou l'expression qui est evaluee
  * @return Le type de l'expression
  */
-static type_v evalFunct(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
+static type_v evalFunct(Node* expr, Identifier* funct_id, Precalc* pre_calc, int is_expr) {
     if (pre_calc) pre_calc->abort = 1;
     Identifier* funct = verifHashTable(table_ception->global_funct, expr->ident);
     if (!funct) {
         errorImpliciteDecl(expr);
         return None_v;
     }
+    if ((funct_id->data.func.size_alloc + funct->data.func.size_param) % 16) fprintf(f_nasm, "sub rsp, %d\n", 16 - (funct_id->data.func.size_alloc + funct->data.func.size_param % 16));
     Node* arg = expr->firstChild;
-    for (int i = funct->data.func.nb_param - 1; i >= 0; i--) {
+    for (int i = 0; i < funct->data.func.nb_param; i++) {
         if (!arg || arg->label == Void) {
             errorTooFewArgs(expr);
             return None_v;
         }
         type_v right = evalExpr(arg, funct_id, NULL);
+        fprintf(
+            f_nasm, "mov r11%c, [rsp]\nadd rsp, %d\nsub rsp, %d\nmov %s [rsp], r11%c\n",
+            right == Char_v? 'b': 'd',
+            right == Char_v? 1: 4,
+            funct->data.func.param[i].data.var.type == Char_v? 1: 4,
+            funct->data.func.param[i].data.var.type == Char_v? "byte": "dword",
+            funct->data.func.param[i].data.var.type == Char_v? 'b': 'd'
+        );
         if (funct->data.func.param[i].data.var.type == Char_v && right == Int_v) warningImpliciteConvert(expr, funct->data.func.param[i].data.var.id);
         arg = arg->nextSibling;
     }
@@ -106,6 +117,22 @@ static type_v evalFunct(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
         errorTooManyArgs(expr);
         return None_v;
     }
+    for (int i = 0; i < funct->data.func.nb_param && i < 6; i++) {
+        printf("%s\n", funct->data.func.param[funct->data.func.nb_param - i - 1].data.var.id);
+        fprintf(
+            f_nasm, "mov %s, [rsp]\nadd rsp, %d\n",
+            funct->data.func.param[funct->data.func.nb_param - i - 1].data.var.adress,
+            funct->data.func.param[funct->data.func.nb_param - i - 1].data.var.type == Char_v? 1: 4
+        );
+    }
+    fprintf(f_nasm, "call f_%s\n", funct->data.func.id);
+    if (funct->data.func.size_param) fprintf(f_nasm, "add rsp, %d\n", 16 * ((funct_id->data.func.size_alloc + funct->data.func.size_param) / 16 + (((funct_id->data.func.size_alloc + funct->data.func.size_param % 16)) != 0)) - funct_id->data.func.size_alloc);
+    if (is_expr && funct->data.func.type != Void_v) fprintf(
+        f_nasm, "sub rsp, %d\nmov %s [rsp], %s\n",
+        funct->data.func.type == Char_v? 1: 4,
+        funct->data.func.type == Char_v? "byte": "dword",
+        funct->data.func.type == Char_v? "al": "eax"
+    );
     funct->data.func.is_used = 1;
     return funct->data.func.type;
 }
@@ -238,11 +265,13 @@ static type_v evalBiOperator(Node* expr, Identifier* funct_id, Precalc* pre_calc
             if (left == Char_v) fprintf(f_nasm, "xor rax, rax\n");
             if (right == Char_v) fprintf(f_nasm, "xor rbx, rbx\n");
             fprintf(
-                f_nasm, "xor rdx, rdx\n"
+                f_nasm, "mov r11, rdx\n"
+                        "xor rdx, rdx\n"
                         "mov %s, [rsp]\nadd rsp, %d\n"
                         "mov %s, [rsp]\nadd rsp, %d\n"
                         "idiv rbx\n"
-                        "sub rsp, 4\nmov dword [rsp], eax\n",
+                        "sub rsp, 4\nmov dword [rsp], eax\n"
+                        "mov rdx, r11\n",
                 left == Char_v? "al": "eax",
                 left == Char_v? 1: 4,
                 right == Char_v? "bl": "ebx",
@@ -254,11 +283,13 @@ static type_v evalBiOperator(Node* expr, Identifier* funct_id, Precalc* pre_calc
             if (left == Char_v) fprintf(f_nasm, "xor rax, rax\n");
             if (right == Char_v) fprintf(f_nasm, "xor rbx, rbx\n");
             fprintf(
-                f_nasm, "xor rdx, rdx\n"
+                f_nasm, "mov r11, rdx\n"
+                        "xor rdx, rdx\n"
                         "mov %s, [rsp]\nadd rsp, %d\n"
                         "mov %s, [rsp]\nadd rsp, %d\n"
                         "idiv rbx\n"
-                        "sub rsp, 4\nmov dword [rsp], edx\n",
+                        "sub rsp, 4\nmov dword [rsp], edx\n"
+                        "mov rdx, r11\n",
                 left == Char_v? "al": "eax",
                 left == Char_v? 1: 4,
                 right == Char_v? "bl": "ebx",
@@ -384,7 +415,7 @@ static type_v evalExpr(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     case Num: if (pre_calc) pre_calc->val = expr->num; fprintf(f_nasm, "sub rsp, 4\nmov dword [rsp], %d\n", expr->num); return Int_v;
     case Char: if (pre_calc) pre_calc->val = expr->byte; fprintf(f_nasm, "sub rsp, 1\nmov byte [rsp], '%c'\n", expr->byte); return Char_v;
     case Ident: return evalIdent(expr, funct_id, pre_calc);
-    case Funct: return evalFunct(expr, funct_id, pre_calc);
+    case Funct: return evalFunct(expr, funct_id, pre_calc, 1);
     case Negate: return evalNegate(expr, funct_id, pre_calc);
     case UnOperator: return evalUnOperator(expr, funct_id, pre_calc);
     case BiOperator: return evalBiOperator(expr, funct_id, pre_calc);
@@ -506,7 +537,7 @@ static int evalInstr(Node* instr, Identifier* funct_id) {
     {
     case Affect: return evalAffect(instr, funct_id);
     case Return: return evalReturn(instr, funct_id);
-    case Funct: evalFunct(instr, funct_id, NULL); return 0;
+    case Funct: evalFunct(instr, funct_id, NULL, 0); return 0;
     case While: return evalWhile(instr, funct_id);
     case If: return evalIf(instr, funct_id);
     default: fprintf(stdout, "Instr: %d WIP\n", instr->label); return 0;

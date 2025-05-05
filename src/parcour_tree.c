@@ -145,17 +145,19 @@ void parcourParamFunct(Identifier* funct, Node* node) {
         getParamAdress(adress, nb_param - i, cursor->firstChild->ident);
         Identifier* var_temp = initVariable(cursor->firstChild->nextSibling->ident, cursor->firstChild->ident, adress);
         funct->data.func.param[i] = *var_temp;
+        funct->data.func.param[i].data.var.is_init = 1;
         free(var_temp);
         cursor = cursor->nextSibling;
     }
     for (int j = nb_param - 7; j >= 0; j--) {
         // Place l'adresse des parametres se trouvant dans la pile
-        sprintf(adress, "[rbp+%d]", size_pile);
+        sprintf(adress, "[rbp+%d]", 16 + size_pile); // 16bytes d'en-tete
         funct->data.func.param[j].data.var.adress = (char*) malloc(sizeof(char) * strlen(adress));
         if (!funct->data.func.param[j].data.var.adress) exit(5);
         strcpy(funct->data.func.param[j].data.var.adress, adress);
-        size_pile += funct->data.func.param[j].data.var.type == Int_v? 4: 1;
+        size_pile += funct->data.func.param[j].data.var.type == Char_v? 1: 4;
     }
+    funct->data.func.size_param = size_pile;
     funct->data.func.nb_param = nb_param;
     return;
 }

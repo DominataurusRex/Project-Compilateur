@@ -55,6 +55,7 @@ Identifier* initFunction(char* ident, char* type) {
     new->data.func.local_var = NULL;
     new->data.func.nb_param = 0;
     new->data.func.param = NULL;
+    new->data.func.size_param = 0;
     new->data.func.size_alloc = 0;
     new->data.func.suiv = NULL;
     return new;
@@ -167,10 +168,11 @@ void showTable(Table* table, int indent) {
             for (; var != NULL; var = var->data.func.suiv) {
                 fprintf(stdout, "\033[33m");
                 fprintf(
-                    stdout, "Bucket %-2d | Type: %-4s | Nb_param: %-2d | Size_alloc: %-2d | Id: %s\n",
+                    stdout, "Bucket %-2d | Type: %-4s | Nb_param: %-2d | Size_param: %-2d | Size_alloc: %-2d | Id: %s\n",
                     i,
                     convertTypeVChar(var->data.func.type),
                     var->data.func.nb_param,
+                    var->data.func.size_param,
                     var->data.func.size_alloc,
                     var->data.func.id
                 );

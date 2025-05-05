@@ -2,10 +2,18 @@
 control reache
 */
 
-int v;
+
+int mult(int a, int b) {
+    return a * b;
+}
+
+
+int test(int a, int b, int c, int e, int f) {
+    return (a + b) * c - mult(e / b, -(f % a)); // -> probleme mult()
+
+}
 
 
 int main(void) {
-    v = ((5 + 6) * 4) - (30 / 6) * -(46 % 5);
-    return v;
+    return test(5, 6, 4, 30, 46);
 }
