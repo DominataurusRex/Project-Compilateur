@@ -151,7 +151,7 @@ void parcourParamFunct(Identifier* funct, Node* node) {
     }
     for (int j = nb_param - 7; j >= 0; j--) {
         // Place l'adresse des parametres se trouvant dans la pile
-        sprintf(adress, "[rbp+%d]", 16 + size_pile); // 16bytes d'en-tete
+        sprintf(adress, "[rbp+%d]", 16 + size_pile); // 16bytes d'en-tete + 8 rsp
         funct->data.func.param[j].data.var.adress = (char*) malloc(sizeof(char) * strlen(adress));
         if (!funct->data.func.param[j].data.var.adress) exit(5);
         strcpy(funct->data.func.param[j].data.var.adress, adress);

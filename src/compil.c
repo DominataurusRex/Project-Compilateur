@@ -100,7 +100,21 @@ static type_v evalFunct(Node* expr, Identifier* funct_id, Precalc* pre_calc, int
         errorImpliciteDecl(expr);
         return None_v;
     }
-    if ((funct_id->data.func.size_alloc + funct->data.func.size_param) % 16) fprintf(f_nasm, "sub rsp, %d\n", 16 - (funct_id->data.func.size_alloc + funct->data.func.size_param % 16));
+    int last_save = -1;
+    for (int i = 0; i < funct_id->data.func.nb_param && i < 6 && i < funct->data.func.nb_param; i++) {
+        fprintf(            // Sauvegarde des anciens registre de parametre
+            f_nasm, "sub rsp, %d\nmov %s [rsp], %s\n",
+            funct_id->data.func.param[funct_id->data.func.nb_param - i - 1].data.var.type == Char_v? 1: 4,
+            funct_id->data.func.param[funct_id->data.func.nb_param - i - 1].data.var.type == Char_v? "byte": "dword",
+            funct_id->data.func.param[funct_id->data.func.nb_param - i - 1].data.var.adress
+        );
+        last_save = funct_id->data.func.nb_param - i - 1;
+    }
+    fprintf(                // Alignement
+        f_nasm, "mov r11, rsp\nsub rsp, %d\nand rsp, -16\nadd rsp, %d\nmov qword [rsp], r11\n",
+        8 + funct->data.func.size_param,
+        funct->data.func.size_param
+    );
     Node* arg = expr->firstChild;
     for (int i = 0; i < funct->data.func.nb_param; i++) {
         if (!arg || arg->label == Void) {
@@ -108,7 +122,7 @@ static type_v evalFunct(Node* expr, Identifier* funct_id, Precalc* pre_calc, int
             return None_v;
         }
         type_v right = evalExpr(arg, funct_id, NULL);
-        fprintf(
+        fprintf(            // Convertion des types
             f_nasm, "mov r11%c, [rsp]\nadd rsp, %d\nsub rsp, %d\nmov %s [rsp], r11%c\n",
             right == Char_v? 'b': 'd',
             right == Char_v? 1: 4,
@@ -125,15 +139,29 @@ static type_v evalFunct(Node* expr, Identifier* funct_id, Precalc* pre_calc, int
     }
     for (int i = 0; i < funct->data.func.nb_param && i < 6; i++) {
         printf("%s\n", funct->data.func.param[funct->data.func.nb_param - i - 1].data.var.id);
-        fprintf(
+        fprintf(            // Mise en place des parametres dans les 6er registres
             f_nasm, "mov %s, [rsp]\nadd rsp, %d\n",
             funct->data.func.param[funct->data.func.nb_param - i - 1].data.var.adress,
             funct->data.func.param[funct->data.func.nb_param - i - 1].data.var.type == Char_v? 1: 4
         );
     }
-    fprintf(f_nasm, "call f_%s\n", funct->data.func.id);
-    if (funct->data.func.size_param) fprintf(f_nasm, "add rsp, %d\n", 16 * ((funct_id->data.func.size_alloc + funct->data.func.size_param) / 16 + (((funct_id->data.func.size_alloc + funct->data.func.size_param % 16)) != 0)) - funct_id->data.func.size_alloc);
-    if (is_expr && funct->data.func.type != Void_v) fprintf(
+    fprintf(
+        f_nasm, "call f_%s\nadd rsp, %d\npop rsp\n",
+        funct->data.func.id,
+        funct->data.func.size_param
+    );
+
+
+    if (last_save != -1) for (int i = last_save; i < funct_id->data.func.nb_param; i++) {
+        fprintf(
+            f_nasm, "mov %s, [rsp]\nadd rsp, %d\n",
+            funct_id->data.func.param[i].data.var.adress,
+            funct_id->data.func.param[i].data.var.type == Char_v? 1: 4
+        );
+    }
+
+    
+    if (is_expr && funct->data.func.type != Void_v) fprintf(        // Retour dans la pile
         f_nasm, "sub rsp, %d\nmov %s [rsp], %s\n",
         funct->data.func.type == Char_v? 1: 4,
         funct->data.func.type == Char_v? "byte": "dword",
