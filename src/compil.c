@@ -46,6 +46,12 @@ static Precalc* initPrecalc() {
 }
 
 
+static int newLabel(){
+    nb_label++;
+    return nb_label;
+}
+
+
 /**
  * Evalue l'expression d'appel de variable
  * Ecrit en assembleur tant qu'il n'y a pas d'erreur
@@ -169,7 +175,7 @@ static type_v evalNegate(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
         label_else,
         label_if
     );
-    return Int_v;
+    return Bool_v;
 }
 
 
@@ -327,7 +333,7 @@ static type_v evalOrder(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     }
     free(pre_left);
     free(pre_right);
-    return Int_v;
+    return Bool_v;
 }
 
 
@@ -354,7 +360,7 @@ static type_v evalEqual(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     }
     free(pre_left);
     free(pre_right);
-    return Int_v;
+    return Bool_v;
 }
 
 
@@ -380,7 +386,7 @@ static type_v evalAnd(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     }
     free(pre_left);
     free(pre_right);
-    return Int_v;
+    return Bool_v;
 }
 
 
@@ -406,7 +412,7 @@ static type_v evalOr(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     }
     free(pre_left);
     free(pre_right);
-    return Int_v;
+    return Bool_v;
 }
 
 
@@ -442,19 +448,35 @@ static type_v evalExpr(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
 static int evalAffect(Node* instr, Identifier* funct_id) {
     Identifier* left = verifHashFunct(table_ception->global_var, funct_id, instr->ident);
     if (!left) errorUndeclared(instr);
+    instr->firstChild->true_l = newLabel();
+    instr->firstChild->false_l = newLabel();
+    instr->firstChild->after_l = newLabel();
+
     type_v right = evalExpr(instr->firstChild, funct_id, NULL);
     if (left) {
-        fprintf(
-            f_nasm, "mov r11%c, [rsp]\nadd rsp, %d\n",  // Recuperer la valeur dans la pile
-            right == Char_v? 'b': 'd',
-            right == Char_v? 1: 4
-        );
+        if (right == Bool_v){
+            fprintf(
+                f_nasm, ".%d:\nmov r11d, 1\njmp .%d\n.%d:\nmov r11d, 0\n.%d:\n", 
+                instr->firstChild->true_l,
+                instr->firstChild->after_l,
+                instr->firstChild->false_l,
+                instr->firstChild->after_l
+            );
+        }
+        else{
+            fprintf(
+                f_nasm, "mov r11%c, [rsp]\nadd rsp, %d\n",  // Recuperer la valeur dans la pile
+                right == Char_v? 'b': 'd',
+                right == Char_v? 1: 4
+            );
+        }
+        
         left->data.var.is_init = 1;
         if (right == Void_v) {
             errorIgnoredVoid(instr->firstChild);
         }
         int affect_type = left->data.var.type;
-        if (affect_type == Char_v && right == Int_v) warningImpliciteConvert(instr, NULL);
+        if (affect_type == Char_v && (right == Int_v || right == Bool_v)) warningImpliciteConvert(instr, NULL);
         fprintf(
             f_nasm, "mov %s %s, r11%c\n",               // Place la valeur recuperer dans la zone memoire
             affect_type == Char_v? "byte": "dword",
@@ -475,9 +497,9 @@ static int evalAffect(Node* instr, Identifier* funct_id) {
  */
 static int evalReturn(Node* instr, Identifier* funct_id) {
     type_v right = instr->firstChild? evalExpr(instr->firstChild, funct_id, NULL): Void_v;
-    if (funct_id->data.func.type == Void_v && (right == Int_v || right == Char_v)) warningRetValVoid(instr);
+    if (funct_id->data.func.type == Void_v && right != Void_v && right != None_v) warningRetValVoid(instr);
     if (funct_id->data.func.type != Void_v && right == Void_v) warningRetNoValNoVoid(instr);
-    if (funct_id->data.func.type == Char_v && right == Int_v) warningImpliciteConvert(instr, NULL);
+    if (funct_id->data.func.type == Char_v && (right == Int_v || right == Bool_v)) warningImpliciteConvert(instr, NULL);
     if (right == Char_v) fprintf(f_nasm, "xor rax, rax\nmov al, [rsp]\nadd rsp, 1\n");
     else if (right != Void_v) fprintf(f_nasm, "mov eax, [rsp]\nadd rsp, 4\n");
     fprintf(f_nasm, "mov rsp, rbp\npop rbp\nret\n");

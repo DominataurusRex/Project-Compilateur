@@ -51,6 +51,9 @@ Node *makeNode(label_t label) {
     node->ident = NULL;
     node->line = 0;
     node->column = 0;
+    node->true_l = -1;
+    node->false_l = -1;
+    node->after_l = -1;
     return node;
 }
 

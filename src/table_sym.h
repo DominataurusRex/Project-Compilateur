@@ -9,6 +9,7 @@ typedef enum {
     Int_v,          // Type int
     Char_v,         // Type char
     Void_v,         // Type void
+    Bool_v,         // Type bool
     None_v          // Probleme de typage
 } type_v;
 
