@@ -8,7 +8,7 @@ bin/tpcc: obj/$(LEXER).o obj/$(PARSER).o obj/tree.o obj/table_sym.o obj/main.o o
 	$(CC) -o $@ $^ -lfl
 
 obj/main.o: src/main.c
-	gcc -c -o obj/main.o src/main.c $(CFLAGS)
+	$(CC) -c -o obj/main.o src/main.c $(CFLAGS)
 
 obj/$(PARSER).o: obj/$(PARSER).tab.c src/tree.h src/table_sym.h
 	$(CC) -c -o $@ $< $(CFLAGS)
