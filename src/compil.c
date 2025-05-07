@@ -181,11 +181,12 @@ static type_v evalFunct(Node* expr, Identifier* funct_id, Precalc* pre_calc, int
  * @return Le type de l'expression
  */
 static type_v evalNegate(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
+    expr->firstChild->true_l = expr->false_l;
+    expr->firstChild->false_l = expr->true_l;
     type_v right = evalExpr(expr->firstChild, funct_id, pre_calc);
     if (pre_calc && !pre_calc->abort) pre_calc->val = !pre_calc->val;
-    int label_if = nb_label;
-    int label_else = nb_label + 1;
-    nb_label += 2;
+    
+    /*
     fprintf(
         f_nasm, "mov r11%c, [rsp]\nadd rsp, %d\n"
                 "cmp r11d, 0\n"
@@ -203,6 +204,8 @@ static type_v evalNegate(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
         label_else,
         label_if
     );
+    */
+
     return Bool_v;
 }
 
@@ -347,8 +350,9 @@ static type_v evalBiOperator(Node* expr, Identifier* funct_id, Precalc* pre_calc
 static type_v evalOrder(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     Precalc* pre_left = pre_calc? initPrecalc(): NULL;
     Precalc* pre_right = pre_calc? initPrecalc(): NULL;
-    evalExpr(expr->firstChild, funct_id, pre_left);
-    evalExpr(expr->firstChild->nextSibling, funct_id, pre_right);
+    type_v right = evalExpr(expr->firstChild->nextSibling, funct_id, pre_right);
+    type_v left = evalExpr(expr->firstChild, funct_id, pre_left);
+
     if (pre_calc) {
         if (!pre_left->abort && !pre_right->abort) {
             if (!strcmp(expr->ident, "<")) pre_calc->val = pre_left->val < pre_right->val;
@@ -359,6 +363,26 @@ static type_v evalOrder(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
             pre_calc->abort = 1;
         }
     }
+    if (left == Char_v) fprintf(f_nasm, "xor r10, r10\n");
+    if (right == Char_v) fprintf(f_nasm, "xor r11, r11\n");
+    fprintf(f_nasm, "mov r10%c, [rsp]\nadd rsp, %d\nmov r11%c, [rsp]\nadd rsp, %d\ncmp r10, r11\n", 
+        left == Char_v ? 'd' : 'b', 
+        left == Char_v ? 1 : 4, 
+        right == Char_v ? 'd' : 'b', 
+        right == Char_v ? 1 : 4);
+    if (!strcmp(expr->ident, "<")) {
+        fprintf(f_nasm, "jl .%d\n", expr->true_l);
+    }
+    else if (!strcmp(expr->ident, "<=")){
+        fprintf(f_nasm, "jle .%d\n", expr->true_l);
+    } 
+    else if (!strcmp(expr->ident, ">")){
+        fprintf(f_nasm, "jg .%d\n", expr->true_l);
+    } 
+    else {
+        fprintf(f_nasm, "jge .%d\n", expr->true_l);
+    } 
+    fprintf(f_nasm, "jmp .%d\n", expr->false_l);
     free(pre_left);
     free(pre_right);
     return Bool_v;
@@ -376,8 +400,8 @@ static type_v evalOrder(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
 static type_v evalEqual(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     Precalc* pre_left = pre_calc? initPrecalc(): NULL;
     Precalc* pre_right = pre_calc? initPrecalc(): NULL;
-    evalExpr(expr->firstChild, funct_id, pre_left);
-    evalExpr(expr->firstChild->nextSibling, funct_id, pre_right);
+    type_v right = evalExpr(expr->firstChild->nextSibling, funct_id, pre_right);
+    type_v left = evalExpr(expr->firstChild, funct_id, pre_left);
     if (pre_calc) {
         if (!pre_left->abort && !pre_right->abort) {
             if (!strcmp(expr->ident, "==")) pre_calc->val = pre_left->val == pre_right->val;
@@ -386,6 +410,16 @@ static type_v evalEqual(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
             pre_calc->abort = 1;
         }
     }
+    if (left == Char_v) fprintf(f_nasm, "xor r10, r10\n");
+    if (right == Char_v) fprintf(f_nasm, "xor r11, r11\n");
+    fprintf(f_nasm, "mov r10%c, [rsp]\nadd rsp, %d\nmov r11%c, [rsp]\nadd rsp, %d\ncmp r10, r11\n", 
+        left == Char_v ? 'd' : 'b', 
+        left == Char_v ? 1 : 4, 
+        right == Char_v ? 'd' : 'b', 
+        right == Char_v ? 1 : 4);
+    fprintf(f_nasm, "je .%d\njmp .%d\n",
+         strcmp(expr->ident, "==") ? expr->false_l : expr->true_l,
+         strcmp(expr->ident, "==") ? expr->true_l : expr->false_l);
     free(pre_left);
     free(pre_right);
     return Bool_v;
