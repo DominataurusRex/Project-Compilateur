@@ -437,7 +437,12 @@ static type_v evalEqual(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
 static type_v evalAnd(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     Precalc* pre_left = pre_calc? initPrecalc(): NULL;
     Precalc* pre_right = pre_calc? initPrecalc(): NULL;
+    expr->firstChild->true_l = newLabel();
+    expr->firstChild->false_l = expr->false_l;
+    expr->firstChild->nextSibling->true_l = expr->true_l;
+    expr->firstChild->nextSibling->false_l = expr->false_l;
     evalExpr(expr->firstChild, funct_id, pre_left);
+    fprintf(f_nasm, ".%d:\n", expr->firstChild->true_l);
     evalExpr(expr->firstChild->nextSibling, funct_id, pre_right);
     if (pre_calc) {
         if (!pre_left->abort && !pre_right->abort) {
@@ -446,6 +451,7 @@ static type_v evalAnd(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
             pre_calc->abort = 1;
         }
     }
+
     free(pre_left);
     free(pre_right);
     return Bool_v;
@@ -463,7 +469,12 @@ static type_v evalAnd(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
 static type_v evalOr(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     Precalc* pre_left = pre_calc? initPrecalc(): NULL;
     Precalc* pre_right = pre_calc? initPrecalc(): NULL;
+    expr->firstChild->true_l = expr->true_l;
+    expr->firstChild->false_l = newLabel();
+    expr->firstChild->nextSibling->true_l = expr->true_l;
+    expr->firstChild->nextSibling->false_l = expr->false_l;
     evalExpr(expr->firstChild, funct_id, pre_left);
+    fprintf(f_nasm, ".%d:\n", expr->firstChild->false_l);
     evalExpr(expr->firstChild->nextSibling, funct_id, pre_right);
     if (pre_calc) {
         if (!pre_left->abort && !pre_right->abort) {
@@ -566,6 +577,7 @@ static int evalReturn(Node* instr, Identifier* funct_id) {
     else if (right != Void_v) fprintf(f_nasm, "mov eax, [rsp]\nadd rsp, 4\n");
     fprintf(f_nasm, "mov rsp, rbp\npop rbp\nret\n");
     return 1;
+
 }
 
 
@@ -577,8 +589,18 @@ static int evalReturn(Node* instr, Identifier* funct_id) {
  * @return Le passage obligatoire par l'instruction `return` dans l'expression
  */
 static int evalWhile(Node* instr, Identifier* funct_id) {
+    instr->after_l = newLabel();
+    int begin = newLabel();
+    int iftrue = newLabel();
+    instr->firstChild->firstChild->true_l = iftrue;
+    instr->firstChild->firstChild->false_l = instr->after_l;
+    printf("%d %d %d\n", instr->true_l, instr->after_l, instr->false_l); 
+    fprintf(f_nasm, ".%d:\n", begin);
     evalExpr(instr->firstChild->firstChild, funct_id, NULL); //condition while
+    instr->firstChild->nextSibling->firstChild->after_l = begin;
+    fprintf(f_nasm, ".%d:\n", iftrue);
     int nb_ret = evalSuiteInstr(instr->firstChild->nextSibling->firstChild, funct_id); //intérieur boucle while
+    fprintf(f_nasm, "jmp .%d\n.%d:\n", begin, instr->after_l);
     return nb_ret;
 }
 
@@ -593,7 +615,10 @@ static int evalWhile(Node* instr, Identifier* funct_id) {
 static int evalIf(Node* instr, Identifier* funct_id) {
     Precalc* pre_calc = initPrecalc();
     int tmp;
+    //instr->firstChild->true_l = newLabel();
+    //instr->firstChild->false_l = instr->after_l;
     evalExpr(instr->firstChild->firstChild, funct_id, pre_calc);
+    //instr->firstChild->nextSibling->after_l = instr->after_l;
     int nb_ret_if = evalSuiteInstr(instr->firstChild->nextSibling->firstChild, funct_id);
     // Cas if-else
     if (instr->firstChild->nextSibling->nextSibling){

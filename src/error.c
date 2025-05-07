@@ -31,11 +31,19 @@ void errorImpliciteDecl(Node* node) {
     nb_warning++;
 }
 
-
-void errorNotMain() {
+void errorNotMain(){
     fprintf(
         stderr,
-        "\033[1m%s:\033[31;1m ~error~ warning:\033[0m \033[1m‘int main(void)’\033[0m function signature not found\n\n",
+        "\033[1m%s:\033[31;1m error:\033[0m no declaration of function \033[1m‘main’\033[0m\n\n",
+        file_name
+    );
+    nb_error++;
+}
+
+void warningMain() {
+    fprintf(
+        stderr,
+        "\033[1m%s:\033[35;1mwarning:\033[0m \033[1m‘int main(...)’\033[0m function signature not found\n\n",
         file_name
     );
     nb_warning++;

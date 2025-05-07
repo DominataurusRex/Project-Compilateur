@@ -182,11 +182,10 @@ Identifier* fillEnTeteFunct(Node* head) {
         for (int i = 0; i < V_END; i++) {
             if (!strcmp(ban_funct[i], name->ident)) errorRedefinitionBan(name);
         }
-        // Verification signature int main(void)
+        // Verification signature int main(...)
         if (!strcmp(name->ident, "main")) {
-            if (head->firstChild->firstChild->label != Void && !strcmp(head->firstChild->firstChild->ident, "int")) {
-                if (head->firstChild->firstChild->nextSibling->nextSibling->firstChild->label == Void) main_flag = 1;
-            }
+            if (head->firstChild->firstChild->nextSibling->nextSibling->firstChild->label == Void) warningMain();
+            if (head->firstChild->firstChild->label != Void && !strcmp(head->firstChild->firstChild->ident, "int")) main_flag = 1;
         }
         parcourParamFunct(new, name->nextSibling);
     }

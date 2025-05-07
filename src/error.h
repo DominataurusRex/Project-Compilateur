@@ -101,6 +101,13 @@ void warningImpliciteConvert(Node* node, char* param);
 
 
 /**
+ * @brief 
+ * 
+ */
+void warningMain();
+
+
+/**
  * Message d'avertissement d'un `return` de fonction non-void renvoyant un void.
  * Incremente nb_warning
  * @param node La node problematique
