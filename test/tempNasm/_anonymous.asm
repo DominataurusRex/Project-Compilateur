@@ -48,10 +48,49 @@ putchar:                       ; Parametre rdi
 putint:                         ; Parametre rdi
     push rbp
     mov rbp, rsp
-    mov esi, edi                ;arg dans printf
-    mov rdi, print_int          ;plagiat de show_registers à partir d'ici lol
-    mov rax, 0
-    call printf
+    cmp rdi, 0
+    jl .neg
+    jmp .pos
+    .neg:
+        imul rdi, -1
+        push rdi
+        mov r11, '-'
+        mov [CHAR_BUFF], r11
+        mov rax, 1
+        mov rdi, 1
+        mov rsi, CHAR_BUFF
+        mov rdx, 1
+        syscall
+        pop rdi
+    .pos:
+    sub rsp, 1
+    mov byte [rsp], 'v'
+    sub rsp, 1
+    mov byte [rsp], 10
+    mov rax, rdi
+    mov r11, 10
+    .loop_convert:
+    xor rdx, rdx
+    idiv r11
+    add dl, '0'
+    cmp rax, 0
+    je .loop_putint
+        sub rsp, 1
+        mov byte [rsp], dl
+        jmp .loop_convert
+    .loop_putint:
+    mov [CHAR_BUFF], rdx
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, CHAR_BUFF
+    mov rdx, 1
+    syscall
+    mov dl, [rsp]
+    add rsp, 1
+    cmp rdx, 'v'
+    jne .loop_putint
+    mov rax, rdx
+    mov rsp, rbp
     pop rbp
     ret
 
