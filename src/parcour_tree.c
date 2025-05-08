@@ -184,7 +184,7 @@ Identifier* fillEnTeteFunct(Node* head) {
         }
         // Verification signature int main(...)
         if (!strcmp(name->ident, "main")) {
-            if (head->firstChild->firstChild->nextSibling->nextSibling->firstChild->label == Void) warningMain();
+            if (head->firstChild->firstChild->nextSibling->nextSibling->firstChild->label != Void) warningMain();
             if (head->firstChild->firstChild->label != Void && !strcmp(head->firstChild->firstChild->ident, "int")) main_flag = 1;
         }
         parcourParamFunct(new, name->nextSibling);

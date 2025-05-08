@@ -122,6 +122,7 @@ static type_v evalFunct(Node* expr, Identifier* funct_id, Precalc* pre_calc, int
             return None_v;
         }
         type_v right = evalExpr(arg, funct_id, NULL);
+        if (right == Void_v) errorIgnoredVoid(arg);
         fprintf(            // Convertion des types
             f_nasm, "mov r11%c, [rsp]\nadd rsp, %d\nsub rsp, %d\nmov %s [rsp], r11%c\n",
             right == Char_v? 'b': 'd',
@@ -184,6 +185,7 @@ static type_v evalNegate(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     expr->firstChild->true_l = expr->false_l;
     expr->firstChild->false_l = expr->true_l;
     type_v right = evalExpr(expr->firstChild, funct_id, pre_calc);
+    if (right == Void_v) errorIgnoredVoid(expr->firstChild);
     if (pre_calc && !pre_calc->abort) pre_calc->val = !pre_calc->val;
     
     /*
@@ -220,6 +222,7 @@ static type_v evalNegate(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
  */
 static type_v evalUnOperator(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     type_v right = evalExpr(expr->firstChild, funct_id, pre_calc);
+    if (right == Void_v) errorIgnoredVoid(expr->firstChild);
     if (pre_calc && !pre_calc->abort && expr->byte == '-') pre_calc->val *= -1; 
     if (expr->byte == '-') fprintf(
         f_nasm, "mov r11%c, [rsp]\nadd rsp, %d\nneg r11\nsub rsp, 4\nmov dword [rsp], r11d\n",
@@ -243,7 +246,9 @@ static type_v evalBiOperator(Node* expr, Identifier* funct_id, Precalc* pre_calc
     Precalc* pre_left = pre_calc? initPrecalc(): NULL;
     Precalc* pre_right = pre_calc || is_div? initPrecalc(): NULL;
     type_v right = evalExpr(expr->firstChild->nextSibling, funct_id, pre_right);
+    if (right == Void_v) errorIgnoredVoid(expr->firstChild->nextSibling);
     type_v left = evalExpr(expr->firstChild, funct_id, pre_left);
+    if (right == Void_v) errorIgnoredVoid(expr->firstChild);
     if (is_div && !pre_right->abort && !pre_right->val) {
         warningDivisionZero(expr);
         if (pre_calc) pre_calc->abort = 1;
@@ -351,7 +356,9 @@ static type_v evalOrder(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     Precalc* pre_left = pre_calc? initPrecalc(): NULL;
     Precalc* pre_right = pre_calc? initPrecalc(): NULL;
     type_v right = evalExpr(expr->firstChild->nextSibling, funct_id, pre_right);
+    if (right == Void_v) errorIgnoredVoid(expr->firstChild->nextSibling);
     type_v left = evalExpr(expr->firstChild, funct_id, pre_left);
+    if (left == Void_v) errorIgnoredVoid(expr->firstChild);
 
     if (pre_calc) {
         if (!pre_left->abort && !pre_right->abort) {
@@ -401,7 +408,9 @@ static type_v evalEqual(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     Precalc* pre_left = pre_calc? initPrecalc(): NULL;
     Precalc* pre_right = pre_calc? initPrecalc(): NULL;
     type_v right = evalExpr(expr->firstChild->nextSibling, funct_id, pre_right);
+    if (right == Void_v) errorIgnoredVoid(expr->firstChild->nextSibling);
     type_v left = evalExpr(expr->firstChild, funct_id, pre_left);
+    if (left == Void_v) errorIgnoredVoid(expr->firstChild);
     if (pre_calc) {
         if (!pre_left->abort && !pre_right->abort) {
             if (!strcmp(expr->ident, "==")) pre_calc->val = pre_left->val == pre_right->val;
@@ -441,9 +450,11 @@ static type_v evalAnd(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     expr->firstChild->false_l = expr->false_l;
     expr->firstChild->nextSibling->true_l = expr->true_l;
     expr->firstChild->nextSibling->false_l = expr->false_l;
-    evalExpr(expr->firstChild, funct_id, pre_left);
+    type_v left = evalExpr(expr->firstChild, funct_id, pre_left);
+    if (left == Void_v) errorIgnoredVoid(expr->firstChild);
     fprintf(f_nasm, ".%d:\n", expr->firstChild->true_l);
-    evalExpr(expr->firstChild->nextSibling, funct_id, pre_right);
+    type_v right = evalExpr(expr->firstChild->nextSibling, funct_id, pre_right);
+    if (right == Void_v) errorIgnoredVoid(expr->firstChild->nextSibling);
     if (pre_calc) {
         if (!pre_left->abort && !pre_right->abort) {
             pre_calc->val = pre_left->val && pre_right->val;
@@ -473,9 +484,11 @@ static type_v evalOr(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     expr->firstChild->false_l = newLabel();
     expr->firstChild->nextSibling->true_l = expr->true_l;
     expr->firstChild->nextSibling->false_l = expr->false_l;
-    evalExpr(expr->firstChild, funct_id, pre_left);
+    type_v left = evalExpr(expr->firstChild, funct_id, pre_left);
+    if (left == Void_v) errorIgnoredVoid(expr->firstChild);
     fprintf(f_nasm, ".%d:\n", expr->firstChild->false_l);
-    evalExpr(expr->firstChild->nextSibling, funct_id, pre_right);
+    type_v right = evalExpr(expr->firstChild->nextSibling, funct_id, pre_right);
+    if (right == Void_v) errorIgnoredVoid(expr->firstChild->nextSibling);
     if (pre_calc) {
         if (!pre_left->abort && !pre_right->abort) {
             pre_calc->val = pre_left->val || pre_right->val;
@@ -491,7 +504,7 @@ static type_v evalOr(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
 
 static type_v evalExpr(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     switch (expr->label) {
-    case Num: if (pre_calc) pre_calc->val = expr->num; fprintf(f_nasm, "sub rsp, 4\nmov dword [rsp], %d\n", expr->num); return Int_v;
+    case Num: if (pre_calc) pre_calc->val = expr->num; fprintf(f_nasm, "sub rsp, 4\nmov dword [rsp], %d\n", expr->num); printf("%d - %d %d %d\n", expr->num, expr->true_l, expr->after_l, expr->false_l); return Int_v;
     case Char: if (pre_calc) pre_calc->val = expr->byte; fprintf(f_nasm, "sub rsp, 1\nmov byte [rsp], '%c'\n", expr->byte); return Char_v;
     case Ident: return evalIdent(expr, funct_id, pre_calc);
     case Funct: return evalFunct(expr, funct_id, pre_calc, 1);
@@ -569,12 +582,13 @@ static int evalAffect(Node* instr, Identifier* funct_id) {
  * @return Le passage obligatoire par l'instruction `return` dans l'expression
  */
 static int evalReturn(Node* instr, Identifier* funct_id) {
-    type_v right = instr->firstChild? evalExpr(instr->firstChild, funct_id, NULL): Void_v;
-    if (funct_id->data.func.type == Void_v && right != Void_v && right != None_v) warningRetValVoid(instr);
-    if (funct_id->data.func.type != Void_v && right == Void_v) warningRetNoValNoVoid(instr);
+    type_v right = instr->firstChild? evalExpr(instr->firstChild, funct_id, NULL): None_v;
+    if (funct_id->data.func.type == Void_v && instr->firstChild) warningRetValVoid(instr);
+    if (funct_id->data.func.type != Void_v && !instr->firstChild) warningRetNoValNoVoid(instr);
     if (funct_id->data.func.type == Char_v && (right == Int_v || right == Bool_v)) warningImpliciteConvert(instr, NULL);
+    if (right == Void_v) errorIgnoredVoid(instr);
     if (right == Char_v) fprintf(f_nasm, "xor rax, rax\nmov al, [rsp]\nadd rsp, 1\n");
-    else if (right != Void_v) fprintf(f_nasm, "mov eax, [rsp]\nadd rsp, 4\n");
+    else if (instr->firstChild) fprintf(f_nasm, "mov eax, [rsp]\nadd rsp, 4\n");
     fprintf(f_nasm, "mov rsp, rbp\npop rbp\nret\n");
     return 1;
 
@@ -596,7 +610,8 @@ static int evalWhile(Node* instr, Identifier* funct_id) {
     instr->firstChild->firstChild->false_l = instr->after_l;
     printf("%d %d %d\n", instr->true_l, instr->after_l, instr->false_l); 
     fprintf(f_nasm, ".%d:\n", begin);
-    evalExpr(instr->firstChild->firstChild, funct_id, NULL); //condition while
+    type_v left = evalExpr(instr->firstChild->firstChild, funct_id, NULL); //condition while
+    if (left == Void_v) errorIgnoredVoid(instr->firstChild->firstChild);
     instr->firstChild->nextSibling->firstChild->after_l = begin;
     fprintf(f_nasm, ".%d:\n", iftrue);
     int nb_ret = evalSuiteInstr(instr->firstChild->nextSibling->firstChild, funct_id); //intérieur boucle while
@@ -617,7 +632,8 @@ static int evalIf(Node* instr, Identifier* funct_id) {
     int tmp;
     //instr->firstChild->true_l = newLabel();
     //instr->firstChild->false_l = instr->after_l;
-    evalExpr(instr->firstChild->firstChild, funct_id, pre_calc);
+    type_v left = evalExpr(instr->firstChild->firstChild, funct_id, pre_calc);
+    if (left == Void_v) errorIgnoredVoid(instr->firstChild->firstChild);
     //instr->firstChild->nextSibling->after_l = instr->after_l;
     int nb_ret_if = evalSuiteInstr(instr->firstChild->nextSibling->firstChild, funct_id);
     // Cas if-else
