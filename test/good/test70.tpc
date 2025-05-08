@@ -21,6 +21,12 @@ int temp(int a) {
 
 int main(void) {
     int a;
-    a = 4 + (6 < 6);
-    return a;
+    a = 0;
+    if (a){
+        return 8;
+    }
+    else{
+        return 2;
+    }
+    return -6;
 }

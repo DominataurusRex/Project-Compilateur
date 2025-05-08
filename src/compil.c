@@ -527,6 +527,7 @@ static type_v evalOr(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     expr->firstChild->false_l = newLabel();
     expr->firstChild->nextSibling->true_l = expr->true_l;
     expr->firstChild->nextSibling->false_l = expr->false_l;
+
     type_v left = evalExpr(expr->firstChild, funct_id, pre_left);
     if (left == Void_v) errorIgnoredVoid(expr->firstChild);
     if (left != Bool_v) fprintf(        // Cas expression non-booleenne
@@ -707,14 +708,26 @@ static int evalWhile(Node* instr, Identifier* funct_id) {
 static int evalIf(Node* instr, Identifier* funct_id) {
     Precalc* pre_calc = initPrecalc();
     int tmp;
-    //instr->firstChild->true_l = newLabel();
-    //instr->firstChild->false_l = instr->after_l;
-    type_v left = evalExpr(instr->firstChild->firstChild, funct_id, pre_calc);
-    if (left == Void_v) errorIgnoredVoid(instr->firstChild->firstChild);
-    //instr->firstChild->nextSibling->after_l = instr->after_l;
+
+    int iftrue = newLabel();
+    int iffalse = newLabel();
+    instr->after_l = newLabel();
+
+    instr->firstChild->firstChild->true_l = iftrue;
+    if (instr->firstChild->nextSibling->nextSibling) instr->firstChild->firstChild->false_l = iffalse;
+    else instr->firstChild->firstChild->false_l = instr->after_l;
+
+    printf("%d %d %d ahahhahahahhah\n", iftrue, iffalse, instr->after_l); 
+
+    evalExpr(instr->firstChild->firstChild, funct_id, pre_calc); //visit-sce(if.firstchild);
+    instr->firstChild->nextSibling->firstChild->after_l = instr->after_l; //if.secondchild.after=if.after;
+    fprintf(f_nasm, ".%d:\n", iftrue);
     int nb_ret_if = evalSuiteInstr(instr->firstChild->nextSibling->firstChild, funct_id);
-    // Cas if-else
+    // Cas else
     if (instr->firstChild->nextSibling->nextSibling){
+        fprintf(f_nasm, "jmp .%d: ;ICICICICICI\n", instr->after_l); //write('goto' ifElse.after) ;
+        instr->firstChild->nextSibling->nextSibling->firstChild->after_l = instr->after_l;
+        fprintf(f_nasm, ".%d:\n", iffalse);
         int nb_ret_else = evalSuiteInstr(instr->firstChild->nextSibling->nextSibling->firstChild, funct_id);
         // Cas tautologie
         if (!(pre_calc->abort)) tmp = (nb_ret_if || !(pre_calc->val)) && (nb_ret_else || pre_calc->val);
@@ -723,10 +736,11 @@ static int evalIf(Node* instr, Identifier* funct_id) {
     } else { // Cas if
         tmp = !(pre_calc->abort) && pre_calc->val && nb_ret_if;
     }
+
+    
     free(pre_calc);
     return tmp;
 }
-
 
 /**
  * Fonction aiguillage pour l'evaluation des instructions
