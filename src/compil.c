@@ -52,6 +52,28 @@ static int newLabel(){
 }
 
 
+static void convertBoolInt(Node* expr) {
+    fprintf(
+        f_nasm, ".label_%d:\nsub rsp, 4\nmov dword [rsp], 1\njmp .label_%d\n.label_%d:\nsub rsp, 4\nmov dword [rsp], 0\n.label_%d:\n", 
+        expr->true_l,
+        expr->after_l,
+        expr->false_l,
+        expr->after_l
+    );
+}
+
+
+/**
+ * Genere les labels du noeud `expr`
+ * @param expr Le noeud
+ */
+static void generateLabelNode(Node* expr) {
+    expr->true_l = newLabel();
+    expr->after_l = newLabel();
+    expr->false_l = newLabel();
+}
+
+
 /**
  * Evalue l'expression d'appel de variable
  * Ecrit en assembleur tant qu'il n'y a pas d'erreur
@@ -121,9 +143,11 @@ static type_v evalFunct(Node* expr, Identifier* funct_id, Precalc* pre_calc, int
             errorTooFewArgs(expr);
             return None_v;
         }
+        generateLabelNode(arg);
         type_v right = evalExpr(arg, funct_id, NULL);
         if (right == Void_v) errorIgnoredVoid(arg);
-        fprintf(            // Convertion des types
+        if (right == Bool_v) {convertBoolInt(arg); right = Int_v;}
+        if (right != funct->data.func.param[i].data.var.type) fprintf(            // Convertion des types
             f_nasm, "mov r11%c, [rsp]\nadd rsp, %d\nsub rsp, %d\nmov %s [rsp], r11%c\n",
             right == Char_v? 'b': 'd',
             right == Char_v? 1: 4,
@@ -187,26 +211,17 @@ static type_v evalNegate(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     type_v right = evalExpr(expr->firstChild, funct_id, pre_calc);
     if (right == Void_v) errorIgnoredVoid(expr->firstChild);
     if (pre_calc && !pre_calc->abort) pre_calc->val = !pre_calc->val;
-    
-    /*
-    fprintf(
-        f_nasm, "mov r11%c, [rsp]\nadd rsp, %d\n"
-                "cmp r11d, 0\n"
-                "jne .%d_else\n"
-                "mov r11d, 1\n"
-                "jmp .%d_if\n"
-                ".%d_else:\n"
-                "xor r11d, r11d\n"
-                ".%d_if:\n"
-                "sub rsp, 4\nmov dword [rsp], r11d\n",
+    if (right != Bool_v) fprintf(       // Cas expression non-boolenne
+        f_nasm, "mov r11%c, [rsp]\n"
+                "add rsp, %d\n"
+                "cmp r11, 0\n"
+                "je .label_%d\n"
+                "jmp .label_%d\n",
         right == Char_v? 'b': 'd',
         right == Char_v? 1: 4,
-        label_else,
-        label_if,
-        label_else,
-        label_if
+        expr->true_l,
+        expr->false_l
     );
-    */
 
     return Bool_v;
 }
@@ -221,8 +236,10 @@ static type_v evalNegate(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
  * @return Le type de l'expression
  */
 static type_v evalUnOperator(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
+    generateLabelNode(expr->firstChild);
     type_v right = evalExpr(expr->firstChild, funct_id, pre_calc);
     if (right == Void_v) errorIgnoredVoid(expr->firstChild);
+    if (right == Bool_v) convertBoolInt(expr->firstChild);
     if (pre_calc && !pre_calc->abort && expr->byte == '-') pre_calc->val *= -1; 
     if (expr->byte == '-') fprintf(
         f_nasm, "mov r11%c, [rsp]\nadd rsp, %d\nneg r11\nsub rsp, 4\nmov dword [rsp], r11d\n",
@@ -245,10 +262,14 @@ static type_v evalBiOperator(Node* expr, Identifier* funct_id, Precalc* pre_calc
     int is_div = expr->byte == '/' || expr->byte == '%';
     Precalc* pre_left = pre_calc? initPrecalc(): NULL;
     Precalc* pre_right = pre_calc || is_div? initPrecalc(): NULL;
+    generateLabelNode(expr->firstChild->nextSibling);
     type_v right = evalExpr(expr->firstChild->nextSibling, funct_id, pre_right);
     if (right == Void_v) errorIgnoredVoid(expr->firstChild->nextSibling);
+    if (right == Bool_v) convertBoolInt(expr->firstChild->nextSibling);
+    generateLabelNode(expr->firstChild);
     type_v left = evalExpr(expr->firstChild, funct_id, pre_left);
-    if (right == Void_v) errorIgnoredVoid(expr->firstChild);
+    if (left == Void_v) errorIgnoredVoid(expr->firstChild);
+    if (left == Bool_v) convertBoolInt(expr->firstChild);
     if (is_div && !pre_right->abort && !pre_right->val) {
         warningDivisionZero(expr);
         if (pre_calc) pre_calc->abort = 1;
@@ -373,23 +394,23 @@ static type_v evalOrder(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     if (left == Char_v) fprintf(f_nasm, "xor r10, r10\n");
     if (right == Char_v) fprintf(f_nasm, "xor r11, r11\n");
     fprintf(f_nasm, "mov r10%c, [rsp]\nadd rsp, %d\nmov r11%c, [rsp]\nadd rsp, %d\ncmp r10, r11\n", 
-        left == Char_v ? 'd' : 'b', 
+        left == Char_v ? 'b' : 'd', 
         left == Char_v ? 1 : 4, 
-        right == Char_v ? 'd' : 'b', 
+        right == Char_v ? 'b' : 'd', 
         right == Char_v ? 1 : 4);
     if (!strcmp(expr->ident, "<")) {
-        fprintf(f_nasm, "jl .%d\n", expr->true_l);
+        fprintf(f_nasm, "jl .label_%d\n", expr->true_l);
     }
     else if (!strcmp(expr->ident, "<=")){
-        fprintf(f_nasm, "jle .%d\n", expr->true_l);
+        fprintf(f_nasm, "jle .label_%d\n", expr->true_l);
     } 
     else if (!strcmp(expr->ident, ">")){
-        fprintf(f_nasm, "jg .%d\n", expr->true_l);
+        fprintf(f_nasm, "jg .label_%d\n", expr->true_l);
     } 
     else {
-        fprintf(f_nasm, "jge .%d\n", expr->true_l);
+        fprintf(f_nasm, "jge .label_%d\n", expr->true_l);
     } 
-    fprintf(f_nasm, "jmp .%d\n", expr->false_l);
+    fprintf(f_nasm, "jmp .label_%d\n", expr->false_l);
     free(pre_left);
     free(pre_right);
     return Bool_v;
@@ -422,11 +443,11 @@ static type_v evalEqual(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     if (left == Char_v) fprintf(f_nasm, "xor r10, r10\n");
     if (right == Char_v) fprintf(f_nasm, "xor r11, r11\n");
     fprintf(f_nasm, "mov r10%c, [rsp]\nadd rsp, %d\nmov r11%c, [rsp]\nadd rsp, %d\ncmp r10, r11\n", 
-        left == Char_v ? 'd' : 'b', 
+        left == Char_v ? 'b' : 'd', 
         left == Char_v ? 1 : 4, 
-        right == Char_v ? 'd' : 'b', 
+        right == Char_v ? 'b' : 'd', 
         right == Char_v ? 1 : 4);
-    fprintf(f_nasm, "je .%d\njmp .%d\n",
+    fprintf(f_nasm, "je .label_%d\njmp .label_%d\n",
          strcmp(expr->ident, "==") ? expr->false_l : expr->true_l,
          strcmp(expr->ident, "==") ? expr->true_l : expr->false_l);
     free(pre_left);
@@ -452,9 +473,31 @@ static type_v evalAnd(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     expr->firstChild->nextSibling->false_l = expr->false_l;
     type_v left = evalExpr(expr->firstChild, funct_id, pre_left);
     if (left == Void_v) errorIgnoredVoid(expr->firstChild);
-    fprintf(f_nasm, ".%d:\n", expr->firstChild->true_l);
+    if (left != Bool_v) fprintf(        // Cas expression non-booleenne
+        f_nasm, "mov r11%c, [rsp]\n"
+                "add rsp, %d\n"
+                "cmp r11, 0\n"
+                "jne .label_%d\n"
+                "jmp .label_%d\n",
+        left == Char_v? 'b': 'd',
+        left == Char_v? 1: 4,
+        expr->firstChild->true_l,
+        expr->firstChild->false_l
+    );
+    fprintf(f_nasm, ".label_%d:\n", expr->firstChild->true_l);
     type_v right = evalExpr(expr->firstChild->nextSibling, funct_id, pre_right);
     if (right == Void_v) errorIgnoredVoid(expr->firstChild->nextSibling);
+    if (right != Bool_v) fprintf(        // Cas expression non-booleenne
+        f_nasm, "mov r11%c, [rsp]\n"
+                "add rsp, %d\n"
+                "cmp r11, 0\n"
+                "jne .label_%d\n"
+                "jmp .label_%d\n",
+        left == Char_v? 'b': 'd',
+        left == Char_v? 1: 4,
+        expr->firstChild->nextSibling->true_l,
+        expr->firstChild->nextSibling->false_l
+    );
     if (pre_calc) {
         if (!pre_left->abort && !pre_right->abort) {
             pre_calc->val = pre_left->val && pre_right->val;
@@ -486,9 +529,31 @@ static type_v evalOr(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     expr->firstChild->nextSibling->false_l = expr->false_l;
     type_v left = evalExpr(expr->firstChild, funct_id, pre_left);
     if (left == Void_v) errorIgnoredVoid(expr->firstChild);
-    fprintf(f_nasm, ".%d:\n", expr->firstChild->false_l);
+    if (left != Bool_v) fprintf(        // Cas expression non-booleenne
+        f_nasm, "mov r11%c, [rsp]\n"
+                "add rsp, %d\n"
+                "cmp r11, 0\n"
+                "jne .label_%d\n"
+                "jmp .label_%d\n",
+        left == Char_v? 'b': 'd',
+        left == Char_v? 1: 4,
+        expr->firstChild->true_l,
+        expr->firstChild->false_l
+    );
+    fprintf(f_nasm, ".label_%d:\n", expr->firstChild->false_l);
     type_v right = evalExpr(expr->firstChild->nextSibling, funct_id, pre_right);
     if (right == Void_v) errorIgnoredVoid(expr->firstChild->nextSibling);
+    if (right != Bool_v) fprintf(        // Cas expression non-booleenne
+        f_nasm, "mov r11%c, [rsp]\n"
+                "add rsp, %d\n"
+                "cmp r11, 0\n"
+                "jne .label_%d\n"
+                "jmp .label_%d\n",
+        left == Char_v? 'b': 'd',
+        left == Char_v? 1: 4,
+        expr->firstChild->nextSibling->true_l,
+        expr->firstChild->nextSibling->false_l
+    );
     if (pre_calc) {
         if (!pre_left->abort && !pre_right->abort) {
             pre_calc->val = pre_left->val || pre_right->val;
@@ -542,7 +607,7 @@ static int evalAffect(Node* instr, Identifier* funct_id) {
     if (left) {
         if (right == Bool_v){
             fprintf(
-                f_nasm, ".%d:\nmov r11d, 1\njmp .%d\n.%d:\nmov r11d, 0\n.%d:\n", 
+                f_nasm, ".label_%d:\nmov r11d, 1\njmp .label_%d\n.label_%d:\nmov r11d, 0\n.label_%d:\n", 
                 instr->firstChild->true_l,
                 instr->firstChild->after_l,
                 instr->firstChild->false_l,
@@ -550,6 +615,7 @@ static int evalAffect(Node* instr, Identifier* funct_id) {
             );
         }
         else{
+            if (right == Char_v) fprintf(f_nasm, "xor r11, r11\n");
             fprintf(
                 f_nasm, "mov r11%c, [rsp]\nadd rsp, %d\n",  // Recuperer la valeur dans la pile
                 right == Char_v? 'b': 'd',
@@ -609,13 +675,24 @@ static int evalWhile(Node* instr, Identifier* funct_id) {
     instr->firstChild->firstChild->true_l = iftrue;
     instr->firstChild->firstChild->false_l = instr->after_l;
     printf("%d %d %d\n", instr->true_l, instr->after_l, instr->false_l); 
-    fprintf(f_nasm, ".%d:\n", begin);
+    fprintf(f_nasm, ".label_%d:\n", begin);
     type_v left = evalExpr(instr->firstChild->firstChild, funct_id, NULL); //condition while
     if (left == Void_v) errorIgnoredVoid(instr->firstChild->firstChild);
+    if (left != Bool_v) fprintf(        // Cas expression non-booleenne
+        f_nasm, "mov r11%c, [rsp]\n"
+                "add rsp, %d\n"
+                "cmp r11, 0\n"
+                "jne .label_%d\n"
+                "jmp .label_%d\n",
+        left == Char_v? 'b': 'd',
+        left == Char_v? 1: 4,
+        iftrue,
+        instr->after_l
+    );
     instr->firstChild->nextSibling->firstChild->after_l = begin;
-    fprintf(f_nasm, ".%d:\n", iftrue);
+    fprintf(f_nasm, ".label_%d:\n", iftrue);
     int nb_ret = evalSuiteInstr(instr->firstChild->nextSibling->firstChild, funct_id); //intérieur boucle while
-    fprintf(f_nasm, "jmp .%d\n.%d:\n", begin, instr->after_l);
+    fprintf(f_nasm, "jmp .label_%d\n.label_%d:\n", begin, instr->after_l);
     return nb_ret;
 }
 

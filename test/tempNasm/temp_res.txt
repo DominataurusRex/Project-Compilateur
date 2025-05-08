@@ -324,7 +324,7 @@ Incorrect exit code. Expected 2, found 0
 
 
 +------------------------------+
-| 164 tests run/153 tests passed |  - Rajout errorIgnoredVoid partout
+| 164 tests run/154 tests passed |  - Rajout errorIgnoredVoid partout
 +------------------------------+
 
 

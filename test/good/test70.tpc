@@ -14,15 +14,13 @@ int test(char a, int b, char c, int d, char e, int f, char g) {
 }
 
 
-void temp(void) {
-    return;
+int temp(int a) {
+    return a;
 }
 
 
 int main(void) {
     int a;
-    while (temp()) {
-        a = a + 1;
-    }
+    a = 4 + (6 < 6);
     return a;
 }
