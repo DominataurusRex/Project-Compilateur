@@ -4,13 +4,7 @@
 #include "table_sym.h"
 
 
-typedef enum {
-    PUTINT,
-    GETINT,
-    PUTCHAR,
-    GETCHAR,
-    V_END
-} BanFunct;
+
 
 
 /**

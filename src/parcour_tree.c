@@ -3,49 +3,19 @@
 #include <string.h>
 #include "parcour_tree.h"
 #include "error.h"
+#include "implement.h"
 
 TableCeption* table_ception;
 extern Node* root;
 extern char* file_name;
 extern int nb_error;
+extern const char *ban_funct[];
 int main_flag;
 
-static const char *ban_funct[] = {
-    "putint",
-    "getint",
-    "putchar",
-    "getchar"
-};
 
 
-void addBanFunct() {
-    Identifier* new, * var_temp;
-    new = addHashFunct(table_ception->global_funct, "putint", "void");
-    new->data.func.param = (Identifier*) malloc(sizeof(Identifier));
-    if (!new->data.func.param) exit(5);
-    var_temp = initVariable("value", "int", "edi");
-    new->data.func.param[0] = *var_temp;
-    new->data.func.nb_param = 1;
-    free(var_temp);
-    
-    new = addHashFunct(table_ception->global_funct, "putchar", "void");
-    new->data.func.param = (Identifier*) malloc(sizeof(Identifier));
-    if (!new->data.func.param) exit(5);
-    var_temp = initVariable("value", "char", "dil");
-    new->data.func.param[0] = *var_temp;
-    new->data.func.nb_param = 1;
-    free(var_temp);
-    
-    new = addHashFunct(table_ception->global_funct, "getint", "int");
-    new->data.func.param = (Identifier*) malloc(sizeof(Identifier) * 0);
-    if (!new->data.func.param) exit(5);
-    new->data.func.nb_param = 0;
-    
-    new = addHashFunct(table_ception->global_funct, "getchar", "char");
-    new->data.func.param = (Identifier*) malloc(sizeof(Identifier) * 0);
-    if (!new->data.func.param) exit(5);
-    new->data.func.nb_param = 0;
-}
+
+
 
 
 int fillTableVariable(Table* table, Node* node, Identifier* lst_param, int nb_param) {
@@ -78,11 +48,7 @@ int fillTableVariable(Table* table, Node* node, Identifier* lst_param, int nb_pa
                     if (!is_new) errorRedefinition(cursor);
 
                     // Verification redefinition fonction ban
-                    if (nb_param == -1) for (int i = 0; i < V_END; i++) {
-                        if (!strcmp(ban_funct[i], cursor->ident)) {
-                            is_not_ban = 0;
-                        }
-                    }
+                    if (nb_param == -1) is_not_ban = verifBanDupli(cursor->ident);
                     if (!is_not_ban) errorRedefinitionBan(cursor);
                     if (is_new && is_not_ban) {
                         if (!strcmp(cursor->ident, "main")) warningVarMain(cursor);
@@ -179,9 +145,7 @@ Identifier* fillEnTeteFunct(Node* head) {
         errorRedefinition(name);
     } else {
         new = addHashFunct(table_ception->global_funct, name->ident, head->firstChild->firstChild->label == Void? "void": head->firstChild->firstChild->ident);
-        for (int i = 0; i < V_END; i++) {
-            if (!strcmp(ban_funct[i], name->ident)) errorRedefinitionBan(name);
-        }
+        if (verifBanDupli(name->ident)) errorRedefinitionBan(name);
         // Verification signature int main(...)
         if (!strcmp(name->ident, "main")) {
             if (head->firstChild->firstChild->nextSibling->nextSibling->firstChild->label != Void) warningMain();

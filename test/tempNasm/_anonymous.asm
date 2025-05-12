@@ -36,11 +36,13 @@ show_registers:
 putchar:                       ; Parametre rdi
     push rbp
     mov rbp, rsp
-    mov [CHAR_BUFF], rdi
+    mov [CHAR_BUFF], dil
     mov rax, 1
     mov rdi, 1
     mov rsi, CHAR_BUFF
     mov rdx, 1
+    syscall
+    mov byte [CHAR_BUFF], 10
     syscall
     pop rbp
     ret
@@ -48,38 +50,39 @@ putchar:                       ; Parametre rdi
 putint:                         ; Parametre rdi
     push rbp
     mov rbp, rsp
-    cmp rdi, 0
-    jl .neg
-    jmp .pos
-    .neg:
-        imul rdi, -1
-        push rdi
-        mov r11, '-'
-        mov [CHAR_BUFF], r11
+    cmp edi, 0
+    jl .neg_putint
+    jmp .pos_putint
+    .neg_putint:
+        imul edi, -1
+        sub rsp, 4
+        mov dword [rsp], edi
+        mov byte [CHAR_BUFF], '-'
         mov rax, 1
         mov rdi, 1
         mov rsi, CHAR_BUFF
         mov rdx, 1
         syscall
-        pop rdi
-    .pos:
+        mov edi, [rsp]
+        add rsp, 4
+    .pos_putint:
     sub rsp, 1
     mov byte [rsp], 'v'
     sub rsp, 1
     mov byte [rsp], 10
-    mov rax, rdi
-    mov r11, 10
+    mov eax, edi
+    mov r11d, 10
     .loop_convert:
     xor rdx, rdx
-    idiv r11
+    idiv r11d
     add dl, '0'
-    cmp rax, 0
+    cmp eax, 0
     je .loop_putint
         sub rsp, 1
         mov byte [rsp], dl
         jmp .loop_convert
     .loop_putint:
-    mov [CHAR_BUFF], rdx
+    mov [CHAR_BUFF], dl
     mov rax, 1
     mov rdi, 1
     mov rsi, CHAR_BUFF
@@ -103,8 +106,22 @@ getchar:                        ; Retour rax
     mov rsi, CHAR_BUFF
     mov rdx, 1
     syscall
+    xor r11, r11
+    mov r11b, [CHAR_BUFF]
+    dec rsp
+    mov byte [rsp], r11b
+    .loop_getchar:
+        cmp r11, 10             ; ascii \n
+        je .end_getchar
+        xor rax, rax
+        syscall
+        xor r11, r11
+        mov r11b, [CHAR_BUFF]
+        jmp .loop_getchar
+    .end_getchar:
     xor rax, rax
-    mov al, [CHAR_BUFF]
+    mov al, [rsp]
+    inc rsp
     pop rbp
     ret
 
@@ -113,46 +130,62 @@ getint:
     mov rbp, rsp
     xor rax, rax
     xor rdi, rdi
-    mov rsi, INT_BUFF
-    mov rdx, 16
+    mov rsi, CHAR_BUFF
+    mov rdx, 1
     syscall
-
-    xor rcx, rcx
-    xor r10, r10
-    mov r8, 1
-    mov r11, 1
-    mov r10b, byte [INT_BUFF]
-
-    cmp r10, '-'
-    jne .loop_getint
-    inc r8
-    mov r11, -1
+    xor r11, r11
+    mov r11b, [CHAR_BUFF]
+    sub rsp, 4
+    cmp r11, '-'
+    je .neg_getint
+    mov dword [rsp], 1
+    jmp .pos_getint
+    .neg_getint:
+    mov dword [rsp], -1
+    xor rax, rax
+    syscall
+    xor r11, r11
+    mov r11b, [CHAR_BUFF]
+    .pos_getint:
+    sub rsp, 4
+    mov dword [rsp], 0
     .loop_getint:
-        cmp r8, rax
-        jge .end_getint
-
-        mov r10b, byte [INT_BUFF + r8 - 1]
-        cmp r10, '0'
-        jl .not_valid
-        cmp r10, '9'
-        jg .not_valid
-
-        imul rcx, 10
-        sub r10, '0'
-        add rcx, r10
-
-        inc r8
+        cmp r11, 10
+        je .end_getint
+        cmp r11, '0'
+        jl .loop_not_valid
+        cmp r11, '9'
+        jg .loop_not_valid
+        sub r11, '0'
+        mov r10d, [rsp]
+        imul r10, 10
+        add r10, r11
+        mov dword [rsp], r10d
+        xor rax, rax
+        syscall
+        xor r11, r11
+        mov r11b, [CHAR_BUFF]
         jmp .loop_getint
-    .end_getint:
-        imul rcx, r11
-        mov rax, rcx
-        ret
-
+    .loop_not_valid:
+        cmp r11, 10             ; ascii \n
+        je .not_valid
+        xor rax, rax
+        syscall
+        xor r11, r11
+        mov r11b, [CHAR_BUFF]
+        jmp .loop_not_valid
     .not_valid:
         mov rax, 60
-        mov rdi, 5
-        pop rbp
+        mov rdi, 4
         syscall
+    .end_getint:
+    mov eax, [rsp]
+    add rsp, 4
+    mov r11d, [rsp]
+    add rsp, 4
+    imul eax, r11d
+    pop rbp
+    ret
 
 test_funct:
     ;-------------- Variables Local --------------;
@@ -201,9 +234,9 @@ _start:
     and rsp, -16            ; aligne rsp vers le bas (conserve le multiple de 16)
     mov qword [rsp], r11    ; Place rsp dans la Pile
     ;-----------------------;
-    push 34
-    push 43
-    call test_f
+    call getint
+    mov rdi, rax
+    call putint
     ;-----------------------;
     pop rsp                 ; Recupere rsp dans la Pile
     ;-------------- Alignement Pile --------------;

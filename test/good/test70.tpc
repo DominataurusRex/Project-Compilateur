@@ -3,30 +3,12 @@ control reache
 */
 
 
-int mult(int a, int b) {
-    return a * b;
-}
-
-
-int test(char a, int b, char c, int d, char e, int f, char g) {
-    return mult(mult(a + b, c) - mult(d / b, -(e % a)), f) + g;
-
-}
-
-
-int temp(int a) {
-    return a;
-}
-
-
 int main(void) {
-    int a;
-    a = 0;
-    if (a){
-        return 8;
+    int v;
+    v = 6;
+    if (1) {
+        v = 4;
     }
-    else{
-        return 2;
-    }
-    return -6;
+    putint(v);
+    return 0;
 }

@@ -3,6 +3,7 @@
 #include <string.h>
 #include "compil.h"
 #include "error.h"
+#include "implement.h"
 
 extern Node* root;                      // La racine de l'arbre tpc
 extern TableCeption* table_ception;     // Table des symboles
@@ -122,6 +123,7 @@ static type_v evalFunct(Node* expr, Identifier* funct_id, Precalc* pre_calc, int
         errorImpliciteDecl(expr);
         return None_v;
     }
+    verifBanNeed(expr->ident);
     int last_save = -1;
     for (int i = 0; i < funct_id->data.func.nb_param && i < 6 && i < funct->data.func.nb_param; i++) {
         fprintf(            // Sauvegarde des anciens registre de parametre
@@ -790,10 +792,11 @@ void evalTpc() {
     if (!f_nasm) exit(5);
     fprintf(f_nasm, "section .bss\n");
     if (table_ception->size_alloc_var) fprintf(f_nasm, "%s resb %d\n", GLOBAL_VAR, table_ception->size_alloc_var);
-    fprintf(f_nasm, "%s resb 1\n%s resb 16\nsection .text\nglobal _start\n", CHAR_BUFF, INT_BUFF);
+    fprintf(f_nasm, "%s resb 1\nsection .text\nglobal _start\n", CHAR_BUFF);
     Node* decl_funct = root->firstChild->nextSibling;
     for (; decl_funct; decl_funct = decl_funct->nextSibling) evalDeclFonct(decl_funct);
-    fprintf(f_nasm, "_start:\ncall f_main\nmov rdi, rax\nmov rax, 60\nsyscall");        // Recuperer et renvoyer la valeur de sortie du main
+    fprintf(f_nasm, "_start:\ncall f_main\nmov rdi, rax\nmov rax, 60\nsyscall\n");        // Recuperer et renvoyer la valeur de sortie du main
+    writeBanFunct();
     fclose(f_nasm);
     if (nb_error) remove("bin/_anonymous.asm");
 }
