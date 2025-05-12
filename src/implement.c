@@ -38,7 +38,7 @@ void addBanFunct() {
     Identifier* new, * var_temp;
     new = addHashFunct(table_ception->global_funct, "putint", "void");
     new->data.func.param = (Identifier*) malloc(sizeof(Identifier));
-    if (!new->data.func.param) exit(5);
+    if (!new->data.func.param) exit(4);
     var_temp = initVariable("value", "int", "edi");
     new->data.func.param[0] = *var_temp;
     new->data.func.nb_param = 1;
@@ -46,7 +46,7 @@ void addBanFunct() {
     
     new = addHashFunct(table_ception->global_funct, "putchar", "void");
     new->data.func.param = (Identifier*) malloc(sizeof(Identifier));
-    if (!new->data.func.param) exit(5);
+    if (!new->data.func.param) exit(4);
     var_temp = initVariable("value", "char", "dil");
     new->data.func.param[0] = *var_temp;
     new->data.func.nb_param = 1;
@@ -54,12 +54,12 @@ void addBanFunct() {
     
     new = addHashFunct(table_ception->global_funct, "getint", "int");
     new->data.func.param = (Identifier*) malloc(sizeof(Identifier) * 0);
-    if (!new->data.func.param) exit(5);
+    if (!new->data.func.param) exit(4);
     new->data.func.nb_param = 0;
     
     new = addHashFunct(table_ception->global_funct, "getchar", "char");
     new->data.func.param = (Identifier*) malloc(sizeof(Identifier) * 0);
-    if (!new->data.func.param) exit(5);
+    if (!new->data.func.param) exit(4);
     new->data.func.nb_param = 0;
 }
 
@@ -120,7 +120,7 @@ static void writeGetint() {
                 "xor rax, rax\nsyscall\n"
                 "xor r11, r11\nmov r11b, [%s]\njmp .loop_not_valid\n"
                 ".not_valid:\n"
-                "mov rax, 60\nmov rdi, 4\nsyscall\n"
+                "mov rax, 60\nmov rdi, 5\nsyscall\n"
                 ".end_getint:\n"
                 "mov eax, [rsp]\nadd rsp, 4\nmov r11d, [rsp]\nadd rsp, 4\nimul eax, r11d\n"
                 "pop rdx\npop rsi\npop rdi\npop rbp\n"

@@ -27,7 +27,7 @@ type_v convertCharTypeV(char* type) {
 
 Identifier* initVariable(char* ident, char* type, char* adress) {
     Identifier* new = (Identifier*) malloc(sizeof(Identifier));
-    if (!new) exit(5);
+    if (!new) exit(4);
     new->type = VARIABLE;
     new->data.var.id = ident;
     new->data.var.type = convertCharTypeV(type);
@@ -36,7 +36,7 @@ Identifier* initVariable(char* ident, char* type, char* adress) {
     new->data.var.is_init = 0;
     if (strcmp(adress, "-")) {
         new->data.var.adress = strdup(adress);
-        if (!new->data.var.adress) exit(5);
+        if (!new->data.var.adress) exit(4);
     } else {
         new->data.var.adress = NULL;
     }
@@ -47,7 +47,7 @@ Identifier* initVariable(char* ident, char* type, char* adress) {
 
 Identifier* initFunction(char* ident, char* type) {
     Identifier* new = (Identifier*) malloc(sizeof(Identifier));
-    if (!new) exit(5);
+    if (!new) exit(4);
     new->type = FUNCTION;
     new->data.func.id = ident;
     new->data.func.type = convertCharTypeV(type);
@@ -91,7 +91,7 @@ void delIdentifier(Identifier* var) {
  */
 Table* initTableHash(IdType type) {
     Table* new = (Table*) malloc(sizeof(Table));
-    if (!new) exit(5);
+    if (!new) exit(4);
     new->type = type;
     for (int i = 0; i < TAILLE; i ++) {
         new->lst_tab[i] = NULL;
@@ -188,7 +188,7 @@ void showTable(Table* table, int indent) {
 
 TableCeption* initTableCeption() {
     TableCeption* new = (TableCeption*) malloc(sizeof(TableCeption));
-    if (!new) exit(5);
+    if (!new) exit(4);
     new->global_var = initTableHash(VARIABLE);
     new->global_funct = initTableHash(FUNCTION);
     new->size_alloc_var = 0;

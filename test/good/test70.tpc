@@ -6,8 +6,19 @@ control reache
 int main(void) {
     int v;
     v = 6;
-    if (1) {
-        v = 4;
+    if (0) {
+        if (0) {
+            v = 8;
+        } else {
+            v = 9;
+        }
+    }
+    else {
+        if (0) {
+            v = 1;
+        } else {
+            v = 10;
+        }
     }
     putint(v);
     return 0;

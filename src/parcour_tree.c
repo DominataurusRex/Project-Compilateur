@@ -48,7 +48,7 @@ int fillTableVariable(Table* table, Node* node, Identifier* lst_param, int nb_pa
                     if (!is_new) errorRedefinition(cursor);
 
                     // Verification redefinition fonction ban
-                    if (nb_param == -1) is_not_ban = verifBanDupli(cursor->ident);
+                    if (nb_param == -1) is_not_ban = !verifBanDupli(cursor->ident);
                     if (!is_not_ban) errorRedefinitionBan(cursor);
                     if (is_new && is_not_ban) {
                         if (!strcmp(cursor->ident, "main")) warningVarMain(cursor);
@@ -104,7 +104,7 @@ void parcourParamFunct(Identifier* funct, Node* node) {
     }
 
     funct->data.func.param = (Identifier*) malloc(sizeof(Identifier) * nb_param);
-    if (!funct->data.func.param) exit(5);
+    if (!funct->data.func.param) exit(4);
     cursor = node;
     for (int i = 0; i < nb_param; i++) {
         // Place les parametres dans la liste
@@ -119,7 +119,7 @@ void parcourParamFunct(Identifier* funct, Node* node) {
         // Place l'adresse des parametres se trouvant dans la pile
         sprintf(adress, "[rbp+%d]", 16 + size_pile); // 16bytes d'en-tete + 8 rsp
         funct->data.func.param[j].data.var.adress = (char*) malloc(sizeof(char) * strlen(adress));
-        if (!funct->data.func.param[j].data.var.adress) exit(5);
+        if (!funct->data.func.param[j].data.var.adress) exit(4);
         strcpy(funct->data.func.param[j].data.var.adress, adress);
         size_pile += funct->data.func.param[j].data.var.type == Char_v? 1: 4;
     }
