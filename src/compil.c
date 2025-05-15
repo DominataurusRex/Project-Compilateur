@@ -651,7 +651,22 @@ static int evalAffect(Node* instr, Identifier* funct_id) {
  * @return Le passage obligatoire par l'instruction `return` dans l'expression
  */
 static int evalReturn(Node* instr, Identifier* funct_id) {
-    type_v right = instr->firstChild? evalExpr(instr->firstChild, funct_id, NULL): None_v;
+    type_v right = None_v;
+    if (instr->firstChild){
+        instr->firstChild->true_l = newLabel();
+        instr->firstChild->false_l = newLabel();
+        instr->firstChild->after_l = newLabel();
+        right = evalExpr(instr->firstChild, funct_id, NULL);
+    }  
+    if (right == Bool_v){
+        fprintf(
+            f_nasm, ".label_%d:\nmov r11d, 1\njmp .label_%d\n.label_%d:\nmov r11d, 0\n.label_%d:\nsub rsp, 4\nmov dword [rsp], r11d\n", 
+            instr->firstChild->true_l,
+            instr->firstChild->after_l,
+            instr->firstChild->false_l,
+            instr->firstChild->after_l
+        );
+    }
     if (funct_id->data.func.type == Void_v && instr->firstChild) warningRetValVoid(instr);
     if (funct_id->data.func.type != Void_v && !instr->firstChild) warningRetNoValNoVoid(instr);
     if (funct_id->data.func.type == Char_v && (right == Int_v || right == Bool_v)) warningImpliciteConvert(instr, NULL);
@@ -804,6 +819,7 @@ void evalTpc() {
     if (!f_nasm) exit(4);
     fprintf(f_nasm, "section .bss\n");
     if (table_ception->size_alloc_var) fprintf(f_nasm, "%s resb %d\n", GLOBAL_VAR, table_ception->size_alloc_var);
+    if (table_ception->size_static_var) fprintf(f_nasm, "%s resb %d\n", STATIC_VAR, table_ception->size_static_var);
     fprintf(f_nasm, "%s resb 1\nsection .text\nglobal _start\n", CHAR_BUFF);
     Node* decl_funct = root->firstChild->nextSibling;
     for (; decl_funct; decl_funct = decl_funct->nextSibling) evalDeclFonct(decl_funct);

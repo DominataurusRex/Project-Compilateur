@@ -192,6 +192,7 @@ TableCeption* initTableCeption() {
     new->global_var = initTableHash(VARIABLE);
     new->global_funct = initTableHash(FUNCTION);
     new->size_alloc_var = 0;
+    new->size_static_var = 0;
     return new;
 }
 
@@ -213,12 +214,13 @@ void deleteTableCeption(TableCeption* table_ception) {
 }
 
 
-void addHashVar(Table* table_var, char* ident, char* type, char* adress, int is_static) {
+Identifier* addHashVar(Table* table_var, char* ident, char* type, char* adress, int is_static) {
     int hash = functHash(ident);
     Identifier* new = initVariable(ident, type, adress);
     new->data.var.is_static = is_static;
     new->data.var.suiv = table_var->lst_tab[hash];
     table_var->lst_tab[hash] = new;
+    return new;
 }
 
 

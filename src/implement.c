@@ -140,6 +140,7 @@ static void writePutchar() {
                 "mov rax, 1\nmov rdi, 1\n"
                 "mov rsi, %s\nmov rdx, 1\n"
                 "syscall\n"
+                "mov rax, 1\n"
                 "mov byte [%s], 10\nsyscall\n"
                 "pop rdx\npop rsi\n"
                 "pop rbp\n"

@@ -57,11 +57,17 @@ int fillTableVariable(Table* table, Node* node, Identifier* lst_param, int nb_pa
                             addHashVar(table, cursor->ident, start->ident, buff, start->label == StaticType);
                             toto_mem += !strcmp(start->ident, "int")? 4: 1;
                         } else {
-                            toto_mem += !strcmp(start->ident, "int")? 4: 1;
-                            sprintf(buff, "[rbp-%d]", toto_mem);
-                            addHashVar(table, cursor->ident, start->ident, buff, start->label == StaticType);
+                            if (start->label == StaticType){ //je respecte le travail de Paul
+                                sprintf(buff, "[%s+%d]", STATIC_VAR, table_ception->size_static_var);
+                                Identifier* tmp = addHashVar(table, cursor->ident, start->ident, buff, 1);
+                                tmp->data.var.is_init = 1;
+                                table_ception->size_static_var += !strcmp(start->ident, "int")? 4: 1;
+                            } else {
+                                toto_mem += !strcmp(start->ident, "int")? 4: 1;
+                                sprintf(buff, "[rbp-%d]", toto_mem);
+                                addHashVar(table, cursor->ident, start->ident, buff, 0);
+                            }
                         }
-                       
                     }
                 }
             }
@@ -117,7 +123,7 @@ void parcourParamFunct(Identifier* funct, Node* node) {
     }
     for (int j = nb_param - 7; j >= 0; j--) {
         // Place l'adresse des parametres se trouvant dans la pile
-        sprintf(adress, "[rbp+%d]", 16 + size_pile); // 16bytes d'en-tete + 8 rsp
+        sprintf(adress, "[rbp+%d]", 16 + size_pile); // 16bytes d'en-tete
         funct->data.func.param[j].data.var.adress = (char*) malloc(sizeof(char) * strlen(adress));
         if (!funct->data.func.param[j].data.var.adress) exit(4);
         strcpy(funct->data.func.param[j].data.var.adress, adress);

@@ -3,7 +3,7 @@
 
 #define TAILLE 16
 #define GLOBAL_VAR "GLOBAL_VAR"
-
+#define STATIC_VAR "STATIC_VAR"
 
 typedef enum {
     Int_v,          // Type int
@@ -72,6 +72,7 @@ typedef struct temp{
 } Temp;
 */
 
+
 /**
  * Représente une table de hash pour les identifiants.
  */
@@ -87,7 +88,8 @@ typedef struct table {
 typedef struct tableCeption {
     struct table* global_var;       // Table variable global
     struct table* global_funct;     // Table fonction global
-    int size_alloc_var;             // Taille de la memoire a allouer pour les variable global
+    int size_alloc_var;             // Taille de la memoire a allouer pour les variables globales
+    int size_static_var;            // Taille pour les statiques
 } TableCeption;
 
 
@@ -132,7 +134,7 @@ void deleteTableCeption(TableCeption* table_ception);
  * @param type Le type de la variable
  * @param info Si la variable est static (0/1)
  */
-void addHashVar(Table* table_var, char* ident, char* type, char* adress, int is_static);
+Identifier* addHashVar(Table* table_var, char* ident, char* type, char* adress, int is_static);
 
 
 /**
