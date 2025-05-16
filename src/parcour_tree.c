@@ -51,7 +51,6 @@ int fillTableVariable(Table* table, Node* node, Identifier* lst_param, int nb_pa
                     if (nb_param == -1) is_not_ban = !verifBanDupli(cursor->ident);
                     if (!is_not_ban) errorRedefinitionBan(cursor);
                     if (is_new && is_not_ban) {
-                        if (!strcmp(cursor->ident, "main")) warningVarMain(cursor);
                         if (nb_param == -1) {
                             sprintf(buff, "[%s+%d]", GLOBAL_VAR, toto_mem);
                             addHashVar(table, cursor->ident, start->ident, buff, start->label == StaticType);

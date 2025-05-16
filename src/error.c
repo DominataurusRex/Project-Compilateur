@@ -201,15 +201,3 @@ void warningUninitialized(Node* node) {
     );
     nb_warning++;
 }
-
-
-void warningVarMain(Node* node) {
-    fprintf(
-        stderr,
-        "\033[1m%s:%d:%d:\033[35;1m warning:\033[0;1m ‘main’\033[0m is usually a function\n\n",
-        file_name,
-        node->line,
-        node->column
-    );
-    nb_warning++;
-}

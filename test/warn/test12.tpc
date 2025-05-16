@@ -1,14 +1,10 @@
 /*
-control reache
+division by zero
 */
 
 
 int main(void) {
-    int a;
-    a = 1;
-    if (a){
-        return 1;
-    }
-    else{
-    }
+    int millibelle;
+    millibelle = 1 + 1 / (0 / 0);
+    return 1;
 }

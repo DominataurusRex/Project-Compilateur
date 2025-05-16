@@ -131,11 +131,4 @@ void warningRetValVoid(Node* node);
 void warningUninitialized(Node* node);
 
 
-/**
- * Message d'avertissement de la definition de main comme variable.
- * Incremente nb_warning
- * @param node La node problematique
- */
-void warningVarMain(Node* node);
-
 #endif

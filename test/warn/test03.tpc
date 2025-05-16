@@ -1,10 +1,11 @@
 /*
 Implicite conversion (char <- int)
-Affect const
+Affect var
 */
 
 int main(void) {
     char ogrim;
-    ogrim = 5;
+    int isma;
+    ogrim = isma;
     return 0;
 }

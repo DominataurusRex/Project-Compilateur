@@ -1,10 +1,10 @@
 /*
-void function return value
+non-void function return void
 */
 
 
-void tiso(void) {
-    return 1;
+int tiso(void) {
+    
 }
 
 

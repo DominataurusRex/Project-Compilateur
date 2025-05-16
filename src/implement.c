@@ -169,7 +169,6 @@ static void writeGetchar() {
 
 
 void writeBanFunct() {
-    printf("-- BF %d\n", funct_need);
     if (funct_need & 1) writePutint();
     if (funct_need & (1 << 1)) writeGetint();
     if (funct_need & (1 << 2)) writePutchar();

@@ -13,6 +13,9 @@ extern int start_flag;                  // Presence d'un main
 FILE* f_nasm;                           // Fichier sortie nasm
 int nb_label = 0;                       // Nombre de label actuel
 
+
+
+
 // Bonus      -> parametre                              -> retour
 // r11 -> r10 -> (r9 -> r8 -> rcx -> rdx -> rsi -> rdi) -> rax
 
@@ -165,7 +168,7 @@ static type_v evalFunct(Node* expr, Identifier* funct_id, Precalc* pre_calc, int
         return None_v;
     }
     for (int i = 0; i < funct->data.func.nb_param && i < 6; i++) {
-        printf("%s\n", funct->data.func.param[funct->data.func.nb_param - i - 1].data.var.id);
+        // printf("%s\n", funct->data.func.param[funct->data.func.nb_param - i - 1].data.var.id);
         fprintf(            // Mise en place des parametres dans les 6er registres
             f_nasm, "mov %s, [rsp]\nadd rsp, %d\n",
             funct->data.func.param[funct->data.func.nb_param - i - 1].data.var.adress,
@@ -572,7 +575,7 @@ static type_v evalOr(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
 
 static type_v evalExpr(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     switch (expr->label) {
-    case Num: if (pre_calc) pre_calc->val = expr->num; fprintf(f_nasm, "sub rsp, 4\nmov dword [rsp], %d\n", expr->num); printf("%d - %d %d %d\n", expr->num, expr->true_l, expr->after_l, expr->false_l); return Int_v;
+    case Num: if (pre_calc) pre_calc->val = expr->num; fprintf(f_nasm, "sub rsp, 4\nmov dword [rsp], %d\n", expr->num); return Int_v; //printf("%d - %d %d %d\n", expr->num, expr->true_l, expr->after_l, expr->false_l);
     case Char: if (pre_calc) pre_calc->val = expr->byte; fprintf(f_nasm, "sub rsp, 1\nmov byte [rsp], '%c'\n", expr->byte); return Char_v;
     case Ident: return evalIdent(expr, funct_id, pre_calc);
     case Funct: return evalFunct(expr, funct_id, pre_calc, 1);
@@ -707,7 +710,7 @@ static int evalWhile(Node* instr, Identifier* funct_id) {
         iftrue,
         instr->after_l
     );
-    instr->firstChild->nextSibling->firstChild->after_l = begin;
+    if (instr->firstChild->nextSibling->firstChild) instr->firstChild->nextSibling->firstChild->after_l = begin;
     fprintf(f_nasm, ".label_%d:\n", iftrue);
     int nb_ret = evalSuiteInstr(instr->firstChild->nextSibling->firstChild, funct_id); //intérieur boucle while
     fprintf(f_nasm, "jmp .label_%d\n.label_%d:\n", begin, instr->after_l);
@@ -748,13 +751,13 @@ static int evalIf(Node* instr, Identifier* funct_id) {
         iftrue,
         instr->firstChild->firstChild->false_l
     );
-    instr->firstChild->nextSibling->firstChild->after_l = instr->after_l; //if.secondchild.after=if.after;
+    if (instr->firstChild->nextSibling->firstChild) instr->firstChild->nextSibling->firstChild->after_l = instr->after_l; //if.secondchild.after=if.after;
     fprintf(f_nasm, ".label_%d:\n", iftrue);
     int nb_ret_if = evalSuiteInstr(instr->firstChild->nextSibling->firstChild, funct_id);
     // Cas else
     if (instr->firstChild->nextSibling->nextSibling){
         fprintf(f_nasm, "jmp .label_%d ;ICICICICICI\n", instr->after_l); //write('goto' ifElse.after) ;
-        instr->firstChild->nextSibling->nextSibling->firstChild->after_l = instr->after_l;
+        if (instr->firstChild->nextSibling->nextSibling->firstChild) instr->firstChild->nextSibling->nextSibling->firstChild->after_l = instr->after_l; //if.thirdchild.after=if.after;
         fprintf(f_nasm, ".label_%d:\n", iffalse);
         int nb_ret_else = evalSuiteInstr(instr->firstChild->nextSibling->nextSibling->firstChild, funct_id);
         

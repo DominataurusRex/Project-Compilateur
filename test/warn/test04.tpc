@@ -1,11 +1,10 @@
 /*
 Implicite conversion (char <- int)
-Affect var
+Operation sur un type char
 */
 
 int main(void) {
-    char ogrim;
-    int isma;
-    ogrim = isma;
+    char fluke;
+    fluke = -'c';
     return 0;
 }

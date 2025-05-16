@@ -1,16 +1,14 @@
 /*
-Implicite conversion (char <- int)
-Retour de fonction
+void function return value
 */
 
 
-char tiso(void) {
-    return 5;
+void tiso(void) {
+    return 1;
 }
 
 
 int main(void) {
-    int mawlek;
-    mawlek = tiso();
+    tiso();
     return 0;
 }

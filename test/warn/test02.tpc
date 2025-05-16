@@ -1,11 +1,10 @@
 /*
-Uninitialized
-Variable
+Implicite conversion (char <- int)
+Affect const
 */
 
 int main(void) {
-    int grumm;
-    int nymm;
-    grumm = nymm;
+    char ogrim;
+    ogrim = 5;
     return 0;
 }

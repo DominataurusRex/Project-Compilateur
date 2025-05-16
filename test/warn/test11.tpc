@@ -3,13 +3,12 @@ control reache
 */
 
 
-char tiso(void) {
-
-}
-
-
 int main(void) {
-    int mawlek;
-    mawlek = tiso();
-    return 0;
+    int a;
+    a = 1;
+    if (a){
+        return 1;
+    }
+    else{
+    }
 }

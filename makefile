@@ -39,31 +39,3 @@ clean:
 cleanall:
 	make clean
 	rm bin -rf
-
-
-testGood:
-	@for file in test/good/*; do \
-		echo "Traitement $$file"; \
-		./bin/tpcc < "$$file"; \
-	done
-
-
-testSem:
-	@for file in test/sem-err/*; do \
-		echo "Traitement $$file"; \
-		./bin/tpcc < "$$file"; \
-	done
-
-
-testSyn:
-	@for file in test/syn-err/*; do \
-		echo "Traitement $$file"; \
-		./bin/tpcc < "$$file"; \
-	done
-
-
-testWarn:
-	@for file in test/warn/*; do \
-		echo "Traitement $$file"; \
-		./bin/tpcc < "$$file"; \
-	done

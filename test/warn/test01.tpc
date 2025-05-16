@@ -1,8 +1,11 @@
 /*
-main is usually a function
+Uninitialized
+Variable
 */
 
-int Hornet(void) {
-    int main;
+int main(void) {
+    int grumm;
+    int nymm;
+    grumm = nymm;
     return 0;
 }

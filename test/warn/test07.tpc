@@ -1,16 +1,16 @@
 /*
-Implicite convertion (char <- int)
-Affectation de fonction
+Implicite conversion (char <- int)
+Retour de fonction
 */
 
 
-int zote(int a, int b) {
-    return 0;
+char tiso(void) {
+    return 5;
 }
 
 
 int main(void) {
-    char vengefly_king;
-    vengefly_king = zote(3, 4);
+    int mawlek;
+    mawlek = tiso();
     return 0;
 }

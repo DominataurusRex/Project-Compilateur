@@ -1,14 +1,15 @@
 /*
-non-void function return void
+control reache
 */
 
 
-int tiso(void) {
-    
+char tiso(void) {
+
 }
 
 
 int main(void) {
-    tiso();
+    int mawlek;
+    mawlek = tiso();
     return 0;
 }

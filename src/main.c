@@ -96,7 +96,6 @@ int main(int argc, char **argv) {
     if (getOption(argc, argv)) return 0;
     if (getFile(argc, argv)) return 3;
     int value = yyparse();
-    fprintf(stdout, "Retour parser: %d\n", value);
     if (!value) {
         if (show_tree) printTree(root);
         fillTableCeption();
@@ -112,7 +111,10 @@ int main(int argc, char **argv) {
     } else {
         return value;
     }
-    if (nb_error || nb_warning) fprintf(stdout, "\033[31;1mNb error:\033[0m %d\n\033[35;1mNb warning:\033[0m %d\n", nb_error, nb_warning);
-    if (nb_error) return 2;
+    if (nb_warning) fprintf(stdout, "\033[35;1mNb warning:\033[0m %d\n", nb_warning);
+    if (nb_error) {
+        fprintf(stdout, "\033[31;1mNb error:\033[0m %d\n", nb_error);
+        return 2;
+    }
     return 0;
 }
