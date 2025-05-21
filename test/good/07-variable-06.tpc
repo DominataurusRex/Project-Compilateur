@@ -1,0 +1,11 @@
+/*
+    variable glob char
+*/
+
+char bob_omb;
+
+int main(void) {
+    bob_omb = 'c';
+    putint(bob_omb);
+    return 0;
+}

@@ -1,0 +1,10 @@
+/*
+    variable char
+*/
+
+int main(void) {
+    char bomp;
+    bomp = 'c';
+    putint(bomp);
+    return 0;
+}

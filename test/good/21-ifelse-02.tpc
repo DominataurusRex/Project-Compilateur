@@ -1,0 +1,17 @@
+/*
+    if
+*/
+
+
+int main(void) {
+    int octoomba, urchin;
+    octoomba = 30;
+    urchin = 50;
+    if (octoomba < 45) {
+        putchar('o');
+    }
+
+    if (urchin < 45) putchar('i');
+
+    return 0;
+}

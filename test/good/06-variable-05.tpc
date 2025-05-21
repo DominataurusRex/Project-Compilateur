@@ -1,0 +1,11 @@
+/*
+    variable glob int
+*/
+
+int whomp;
+
+int main(void) {
+    whomp = 64;
+    putint(whomp);
+    return 0;
+}

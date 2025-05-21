@@ -1,0 +1,13 @@
+/*
+    variable glob char/int
+*/
+
+char bob_omb;
+int whomp;
+
+int main(void) {
+    bob_omb = 'c';
+    whomp = bob_omb;
+    putint(whomp);
+    return 0;
+}

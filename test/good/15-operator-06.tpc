@@ -1,0 +1,13 @@
+/*
+    negate
+*/
+
+
+int main(void) {
+    int merlon, nolrem;
+    merlon = 0;
+    nolrem = 10;
+    putint(!merlon);
+    putint(!nolrem);
+    return 0;
+}

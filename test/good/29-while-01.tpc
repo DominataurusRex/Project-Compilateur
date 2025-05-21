@@ -1,0 +1,14 @@
+/*
+    while
+*/
+
+
+int main(void) {
+    int dreamcap;
+    dreamcap = 0;
+    while (dreamcap < 10) {
+        putint(dreamcap);
+        dreamcap = dreamcap + 1;
+    }
+    return 0;
+}

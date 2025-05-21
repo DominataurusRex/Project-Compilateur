@@ -1,0 +1,16 @@
+/*
+    if/else no instr
+*/
+
+
+int main(void) {
+    int magmad, icead;
+    magmad = 1;
+    icead = 0;
+    if (magmad) putchar('m');
+    else putchar('j');
+        
+    if (icead) putchar('n');
+    else putchar('i');
+    return 0;
+}

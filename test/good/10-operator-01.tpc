@@ -1,0 +1,12 @@
+/*
+    bioperator
+*/
+
+int main(void) {
+    putint(47 + 5);
+    putint(47 - 5);
+    putint(47 * 5);
+    putint(47 / 5);
+    putint(47 % 5);
+    return 0;
+}

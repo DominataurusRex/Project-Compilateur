@@ -1,0 +1,12 @@
+/*
+    basic function
+*/
+
+int main(void) {
+    putint(4);
+    putchar('v');
+    {
+        
+    }
+    return 0;
+}

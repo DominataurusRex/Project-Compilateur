@@ -63,7 +63,7 @@ def main() -> int:
         print(f"\tEr. Semantique : {value[2]}")
         print(f"\tEr. Autre      : {value[3]}")
         print(f"\tGen. Warning   : {value[4]}")
-        print(f"\n\tSomme ---------> {sum(value)}\n\n")
+        print(f"\n\tSomme ---------> {sum(value[:4])}\n\n")
     return 0
 
 

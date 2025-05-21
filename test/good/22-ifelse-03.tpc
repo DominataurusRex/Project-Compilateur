@@ -1,0 +1,22 @@
+/*
+    if/else no instr
+*/
+
+
+int main(void) {
+    int octoomba, urchin;
+    octoomba = 30;
+    urchin = 50;
+    if (octoomba < 45) {
+        
+    } else {
+        putchar('j');
+    }
+        
+    if (urchin < 45) {
+        putint('n');
+    } else {
+
+    }
+    return 0;
+}

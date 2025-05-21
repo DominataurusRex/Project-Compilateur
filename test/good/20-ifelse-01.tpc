@@ -1,0 +1,20 @@
+/*
+    if-else
+*/
+
+
+int main(void) {
+    int octoomba, urchin;
+    octoomba = 30;
+    urchin = 50;
+    if (octoomba < 45) {
+        putchar('o');
+    } else {
+        putchar('n');
+    }
+
+    if (urchin < 45) putchar('i');
+    else putchar('j');
+
+    return 0;
+}

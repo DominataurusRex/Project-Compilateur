@@ -1,0 +1,28 @@
+/*
+    complexe recursive function 
+*/
+
+
+int isEven(int bleck) {
+    if (bleck < 0) isEven(-bleck);
+    if (bleck == 0) return 1;
+    if (bleck == 1) return 0;
+    return isOdd(bleck - 1);
+}
+
+
+int isOdd(int dimentio) {
+    if (dimentio < 0) isOdd(-dimentio);
+    if (dimentio == 0) return 0;
+    if (dimentio == 1) return 1;
+    return isEven(dimentio - 1);
+}
+
+
+int main(void) {
+    putint(isEven(33));
+    putint(isEven(-34));
+    putint(isOdd(33));
+    putint(isOdd(-34));
+    return 0;
+}

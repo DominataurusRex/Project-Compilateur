@@ -1,0 +1,8 @@
+/*
+    unoperator
+*/
+
+int main(void) {
+    putint(-47);
+    return 0;
+}

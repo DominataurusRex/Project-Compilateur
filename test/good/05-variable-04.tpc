@@ -1,0 +1,14 @@
+/*
+    variable mult char/int
+*/
+
+int main(void) {
+    char bomp, galoomba;
+    int thwomp, goomba;
+    bomp = 'c';
+    galoomba = bomp;
+    goomba = galoomba;
+    thwomp = goomba;
+    putint(thwomp);
+    return 0;
+}

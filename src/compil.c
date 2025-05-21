@@ -56,6 +56,10 @@ static int newLabel(){
 }
 
 
+/**
+ * Permet de se ramener d'une condition de `jmp` a une valeur stocker dans la pile.
+ * @param expr Le noeud
+ */
 static void convertBoolInt(Node* expr) {
     fprintf(
         f_nasm, ".label_%d:\nsub rsp, 4\nmov dword [rsp], 1\njmp .label_%d\n.label_%d:\nsub rsp, 4\nmov dword [rsp], 0\n.label_%d:\n", 
@@ -79,8 +83,8 @@ static void generateLabelNode(Node* expr) {
 
 
 /**
- * Evalue l'expression d'appel de variable
- * Ecrit en assembleur tant qu'il n'y a pas d'erreur
+ * Evalue l'expression d'appel de variable.
+ * Ecrit en assembleur tant qu'il n'y a pas d'erreur.
  * @param expr La node racine de l'expression
  * @param funct_id L'identifier lie a la fonction en cours d'evaluation
  * @param pre_calc Structure pour gerer le pre-calcul de l'expression (`NULL` inutile, sinon necessaire)
@@ -152,14 +156,17 @@ static type_v evalFunct(Node* expr, Identifier* funct_id, Precalc* pre_calc, int
         type_v right = evalExpr(arg, funct_id, NULL);
         if (right == Void_v) errorIgnoredVoid(arg);
         if (right == Bool_v) {convertBoolInt(arg); right = Int_v;}
-        if (right != funct->data.func.param[i].data.var.type) fprintf(            // Convertion des types
-            f_nasm, "mov r11%c, [rsp]\nadd rsp, %d\nsub rsp, %d\nmov %s [rsp], r11%c\n",
-            right == Char_v? 'b': 'd',
-            right == Char_v? 1: 4,
-            funct->data.func.param[i].data.var.type == Char_v? 1: 4,
-            funct->data.func.param[i].data.var.type == Char_v? "byte": "dword",
-            funct->data.func.param[i].data.var.type == Char_v? 'b': 'd'
-        );
+        if (right != funct->data.func.param[i].data.var.type) {
+            if (right == Char_v) fprintf(f_nasm, "xor r11, r11\n");
+            fprintf(            // Convertion des types
+                f_nasm, "mov r11%c, [rsp]\nadd rsp, %d\nsub rsp, %d\nmov %s [rsp], r11%c\n",
+                right == Char_v? 'b': 'd',
+                right == Char_v? 1: 4,
+                funct->data.func.param[i].data.var.type == Char_v? 1: 4,
+                funct->data.func.param[i].data.var.type == Char_v? "byte": "dword",
+                funct->data.func.param[i].data.var.type == Char_v? 'b': 'd'
+            );
+        }
         if (funct->data.func.param[i].data.var.type == Char_v && right == Int_v) warningImpliciteConvert(expr, funct->data.func.param[i].data.var.id);
         arg = arg->nextSibling;
     }
@@ -168,6 +175,18 @@ static type_v evalFunct(Node* expr, Identifier* funct_id, Precalc* pre_calc, int
         return None_v;
     }
     for (int i = 0; i < funct->data.func.nb_param && i < 6; i++) {
+        if (funct->data.func.param[funct->data.func.nb_param - i - 1].data.var.type == Char_v) {
+            char* param_name;
+            switch (i) {
+            case 0: param_name = "rdi"; break;
+            case 1: param_name = "rsi"; break;
+            case 2: param_name = "rdx"; break;
+            case 3: param_name = "rcx"; break;
+            case 4: param_name = "r8"; break;
+            default: param_name = "r9";
+            }
+            fprintf(f_nasm, "xor %s, %s\n", param_name, param_name);
+        }
         // printf("%s\n", funct->data.func.param[funct->data.func.nb_param - i - 1].data.var.id);
         fprintf(            // Mise en place des parametres dans les 6er registres
             f_nasm, "mov %s, [rsp]\nadd rsp, %d\n",
@@ -381,10 +400,18 @@ static type_v evalBiOperator(Node* expr, Identifier* funct_id, Precalc* pre_calc
 static type_v evalOrder(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     Precalc* pre_left = pre_calc? initPrecalc(): NULL;
     Precalc* pre_right = pre_calc? initPrecalc(): NULL;
+    expr->firstChild->nextSibling->true_l = newLabel();
+    expr->firstChild->nextSibling->after_l = newLabel();
+    expr->firstChild->nextSibling->false_l = newLabel();
     type_v right = evalExpr(expr->firstChild->nextSibling, funct_id, pre_right);
     if (right == Void_v) errorIgnoredVoid(expr->firstChild->nextSibling);
+    if (right == Bool_v) convertBoolInt(expr->firstChild->nextSibling);
+    expr->firstChild->true_l = newLabel();
+    expr->firstChild->after_l = newLabel();
+    expr->firstChild->false_l = newLabel();
     type_v left = evalExpr(expr->firstChild, funct_id, pre_left);
     if (left == Void_v) errorIgnoredVoid(expr->firstChild);
+    if (left == Bool_v) convertBoolInt(expr->firstChild);
 
     if (pre_calc) {
         if (!pre_left->abort && !pre_right->abort) {
@@ -433,10 +460,18 @@ static type_v evalOrder(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
 static type_v evalEqual(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     Precalc* pre_left = pre_calc? initPrecalc(): NULL;
     Precalc* pre_right = pre_calc? initPrecalc(): NULL;
+    expr->firstChild->nextSibling->true_l = newLabel();
+    expr->firstChild->nextSibling->after_l = newLabel();
+    expr->firstChild->nextSibling->false_l = newLabel();
     type_v right = evalExpr(expr->firstChild->nextSibling, funct_id, pre_right);
     if (right == Void_v) errorIgnoredVoid(expr->firstChild->nextSibling);
+    if (right == Bool_v) convertBoolInt(expr->firstChild->nextSibling);
+    expr->firstChild->true_l = newLabel();
+    expr->firstChild->after_l = newLabel();
+    expr->firstChild->false_l = newLabel();
     type_v left = evalExpr(expr->firstChild, funct_id, pre_left);
     if (left == Void_v) errorIgnoredVoid(expr->firstChild);
+    if (left == Bool_v) convertBoolInt(expr->firstChild);
     if (pre_calc) {
         if (!pre_left->abort && !pre_right->abort) {
             if (!strcmp(expr->ident, "==")) pre_calc->val = pre_left->val == pre_right->val;

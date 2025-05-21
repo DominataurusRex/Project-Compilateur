@@ -1,0 +1,12 @@
+/*
+    if/else return 
+*/
+
+
+int main(void) {
+    int cocoknight;
+    cocoknight = 40;
+
+    if (cocoknight) return 0;
+    else return 1;
+}

@@ -1,0 +1,14 @@
+/*
+    equals
+*/
+
+int main(void) {
+    putint(1 == 1);
+    putint(2 == 56);
+    putint(2 != 3);
+    putint(5 != 5);
+    putint(1 == (4 != 8));
+    putint(23 + (1 == 1));
+    putint(-(3 != 4));
+    return 0;
+}

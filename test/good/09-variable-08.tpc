@@ -1,0 +1,15 @@
+/*
+    variable mult glob char/int
+*/
+
+char bob_omb, sneaker;
+int whomp, greenie;
+
+int main(void) {
+    bob_omb = 'c';
+    sneaker = bob_omb;
+    greenie = sneaker;
+    whomp = greenie;
+    putint(whomp);
+    return 0;
+}

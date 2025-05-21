@@ -1,0 +1,9 @@
+/*
+    if/else semi return (pre_calc)
+*/
+
+
+int main(void) {
+    if (0) putchar('v');
+    else return 24;
+}

@@ -1,0 +1,20 @@
+/*
+    argument function +6
+*/
+
+
+void nastasia(int nimbi, char shlorp, int glop, int shadoo, char jibberjay, char boomboxer, char squiglet) {
+    putint(nimbi);
+    putchar(shlorp);
+    putint(glop);
+    putint(shadoo);
+    putchar(jibberjay);
+    putchar(boomboxer);
+    putchar(squiglet);
+}
+
+
+int main(void) {
+    nastasia(2007, 'h', 1 < 5, 'c' == 99, 'v', 'j', 'n');
+    return 0;
+}

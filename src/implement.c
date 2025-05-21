@@ -67,7 +67,7 @@ void addBanFunct() {
 static void writePutint() {
     fprintf(
         f_nasm, "f_putint:\n"
-                "push rbp\nmov rbp, rsp\npush rdi\npush rsi\npush rdx\n"
+                "push rbp\nmov rbp, rsp\npush rdi\npush rsi\npush rdx\npush rcx\n"
                 "cmp edi, 0\njl .neg_putint\njmp .pos_putint\n"
                 ".neg_putint:\n"
                 "imul edi, -1\n"
@@ -87,7 +87,7 @@ static void writePutint() {
                 "mov dl, [rsp]\nadd rsp, 1\n"
                 "cmp rdx, 'v'\njne .loop_putint\n"
                 "mov rax, rdx\n"
-                "pop rdx\npop rsi\npop rdi\npop rbp\n"
+                "pop rcx\npop rdx\npop rsi\npop rdi\npop rbp\n"
                 "ret\n",
                 CHAR_BUFF, CHAR_BUFF, CHAR_BUFF, CHAR_BUFF
     );
@@ -135,14 +135,14 @@ static void writePutchar() {
         f_nasm, "f_putchar:\n"
                 "push rbp\n"
                 "mov rbp, rsp\n"
-                "push rsi\npush rdx\n"
+                "push rsi\npush rdx\npush rcx\n"
                 "mov [%s], rdi\n"
                 "mov rax, 1\nmov rdi, 1\n"
                 "mov rsi, %s\nmov rdx, 1\n"
                 "syscall\n"
                 "mov rax, 1\n"
                 "mov byte [%s], 10\nsyscall\n"
-                "pop rdx\npop rsi\n"
+                "pop rcx\npop rdx\npop rsi\n"
                 "pop rbp\n"
                 "ret\n",
                 CHAR_BUFF, CHAR_BUFF, CHAR_BUFF

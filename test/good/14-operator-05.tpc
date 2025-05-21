@@ -1,0 +1,14 @@
+/*
+    and/or
+*/
+
+int main(void) {
+    int ninji, fuzzi;
+    ninji = 45;
+    fuzzi = 64;
+    putint(10 < ninji && ninji < 50);
+    putint(fuzzi < 20 || 70 < fuzzi);
+    putint(ninji && fuzzi);
+    putint(0 || ninji < fuzzi);
+    return 0;
+}

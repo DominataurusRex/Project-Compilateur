@@ -1,0 +1,10 @@
+/*
+    variable int
+*/
+
+int main(void) {
+    int thwomp;
+    thwomp = 64;
+    putint(thwomp);
+    return 0;
+}

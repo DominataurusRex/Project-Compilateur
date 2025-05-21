@@ -1,0 +1,14 @@
+/*
+    void function
+*/
+
+
+void oChunks(void) {
+    putint(3);
+}
+
+
+int main(void) {
+    oChunks();
+    return 0;
+}

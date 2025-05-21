@@ -1,0 +1,21 @@
+/*
+    static value
+*/
+
+
+void mount_pajamaja(void) {
+    static int mammoshka;
+    putint(mammoshka);
+    mammoshka = mammoshka + 1;
+}
+
+
+int main(void) {
+    int popple;
+    popple = 0;
+    while (popple < 10) {
+        mount_pajamaja();
+        popple = popple + 1;
+    }
+    return 0;
+}

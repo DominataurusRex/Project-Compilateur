@@ -1,3 +1,0 @@
-int fonction(void){
-    return 1;
-}

@@ -1,0 +1,17 @@
+/*
+    argument function
+*/
+
+
+void nastasia(int nimbi, char shlorp, int glop, int shadoo) {
+    putint(nimbi);
+    putchar(shlorp);
+    putint(glop);
+    putint(shadoo);
+}
+
+
+int main(void) {
+    nastasia(2007, 'h', 1 < 5, 'c' == 99);
+    return 0;
+}

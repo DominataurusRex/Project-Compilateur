@@ -1,0 +1,15 @@
+/*
+    recursive function 
+*/
+
+
+int superDimentio(int mrL) {
+    if (mrL <= 1) return mrL;
+    return superDimentio(mrL - 1) + superDimentio(mrL - 2);
+}
+
+
+int main(void) {
+    putint(superDimentio(10));
+    return 0;
+}

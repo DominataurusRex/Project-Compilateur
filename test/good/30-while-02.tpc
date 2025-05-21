@@ -1,0 +1,14 @@
+/*
+    while return (pre-calc)
+*/
+
+
+int main(void) {
+    int dreamcap;
+    dreamcap = 0;
+    while (1) {
+        putint(dreamcap);
+        dreamcap = dreamcap + 1;
+        return 24;
+    }
+}

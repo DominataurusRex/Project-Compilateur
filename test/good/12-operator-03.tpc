@@ -1,0 +1,18 @@
+/*
+    order
+*/
+
+int main(void) {
+    putint(56 < 46);
+    putint(46 < 56);
+    putint(56 > 46);
+    putint(46 > 56);
+    putint(56 <= 46);
+    putint(46 <= 56);
+    putint(56 >= 46);
+    putint(46 >= 56);
+    putint(0 < (1 < 2));
+    putint(45 * (4 >= 6));
+    putint(-(5 <= 54));
+    return 0;
+}
