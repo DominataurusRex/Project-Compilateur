@@ -1,0 +1,11 @@
+/*
+Uninitialized
+Variable
+*/
+
+int main(void) {
+    int grumm;
+    int nymm;
+    grumm = nymm;
+    return 0;
+}
