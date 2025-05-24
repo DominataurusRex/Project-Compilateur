@@ -235,6 +235,7 @@ static type_v evalNegate(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     type_v right = evalExpr(expr->firstChild, funct_id, pre_calc);
     if (right == Void_v) errorIgnoredVoid(expr->firstChild);
     if (pre_calc && !pre_calc->abort) pre_calc->val = !pre_calc->val;
+
     if (right != Bool_v) fprintf(       // Cas expression non-boolenne
         f_nasm, "mov r11%c, [rsp]\n"
                 "add rsp, %d\n"
@@ -397,7 +398,7 @@ static type_v evalBiOperator(Node* expr, Identifier* funct_id, Precalc* pre_calc
  * @param pre_calc Structure pour gerer le pre-calcul de l'expression (`NULL` inutile, sinon necessaire)
  * @return Le type de l'expression
  */
-static type_v evalOrder(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
+ static type_v evalOrder(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     Precalc* pre_left = pre_calc? initPrecalc(): NULL;
     Precalc* pre_right = pre_calc? initPrecalc(): NULL;
     expr->firstChild->nextSibling->true_l = newLabel();
@@ -425,6 +426,10 @@ static type_v evalOrder(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     }
     if (left == Char_v) fprintf(f_nasm, "xor r10, r10\n");
     if (right == Char_v) fprintf(f_nasm, "xor r11, r11\n");
+
+    //if (left == Int_v) fprintf(f_nasm, "movsxd r10, dword [rsp]\n");
+    //if (right == Int_v) fprintf(f_nasm, "movsxd r11, dword [rsp]\n");
+
     fprintf(f_nasm, "mov r10%c, [rsp]\nadd rsp, %d\nmov r11%c, [rsp]\nadd rsp, %d\ncmp r10, r11\n", 
         left == Char_v ? 'b' : 'd', 
         left == Char_v ? 1 : 4, 
@@ -447,7 +452,6 @@ static type_v evalOrder(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     free(pre_right);
     return Bool_v;
 }
-
 
 /**
  * Evalue l'expression d'egalite
