@@ -242,7 +242,7 @@ static type_v evalNegate(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     if (right != Bool_v) fprintf(       // Cas expression non-boolenne
         f_nasm, "mov r11%c, [rsp]\n"
                 "add rsp, %d\n"
-                "cmp r11, 0\n"
+                "cmp r11d, 0\n"
                 "je .label_%d\n"
                 "jmp .label_%d\n",
         right == Char_v? 'b': 'd',
@@ -432,7 +432,7 @@ static type_v evalBiOperator(Node* expr, Identifier* funct_id, Precalc* pre_calc
     //if (left == Int_v) fprintf(f_nasm, "movsxd r10, dword [rsp]\n");
     //if (right == Int_v) fprintf(f_nasm, "movsxd r11, dword [rsp]\n");
 
-    fprintf(f_nasm, "mov r10%c, [rsp]\nadd rsp, %d\nmov r11%c, [rsp]\nadd rsp, %d\ncmp r10, r11\n", 
+    fprintf(f_nasm, "mov r10%c, [rsp]\nadd rsp, %d\nmov r11%c, [rsp]\nadd rsp, %d\ncmp r10d, r11d\n", 
         left == Char_v ? 'b' : 'd', 
         left == Char_v ? 1 : 4, 
         right == Char_v ? 'b' : 'd', 
@@ -488,7 +488,7 @@ static type_v evalEqual(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     }
     if (left == Char_v) fprintf(f_nasm, "xor r10, r10\n");
     if (right == Char_v) fprintf(f_nasm, "xor r11, r11\n");
-    fprintf(f_nasm, "mov r10%c, [rsp]\nadd rsp, %d\nmov r11%c, [rsp]\nadd rsp, %d\ncmp r10, r11\n", 
+    fprintf(f_nasm, "mov r10%c, [rsp]\nadd rsp, %d\nmov r11%c, [rsp]\nadd rsp, %d\ncmp r10d, r11d\n", 
         left == Char_v ? 'b' : 'd', 
         left == Char_v ? 1 : 4, 
         right == Char_v ? 'b' : 'd', 
@@ -522,7 +522,7 @@ static type_v evalAnd(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     if (left != Bool_v) fprintf(        // Cas expression non-booleenne
         f_nasm, "mov r11%c, [rsp]\n"
                 "add rsp, %d\n"
-                "cmp r11, 0\n"
+                "cmp r11d, 0\n"
                 "jne .label_%d\n"
                 "jmp .label_%d\n",
         left == Char_v? 'b': 'd',
@@ -536,7 +536,7 @@ static type_v evalAnd(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     if (right != Bool_v) fprintf(        // Cas expression non-booleenne
         f_nasm, "mov r11%c, [rsp]\n"
                 "add rsp, %d\n"
-                "cmp r11, 0\n"
+                "cmp r11d, 0\n"
                 "jne .label_%d\n"
                 "jmp .label_%d\n",
         left == Char_v? 'b': 'd',
@@ -579,7 +579,7 @@ static type_v evalOr(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     if (left != Bool_v) fprintf(        // Cas expression non-booleenne
         f_nasm, "mov r11%c, [rsp]\n"
                 "add rsp, %d\n"
-                "cmp r11, 0\n"
+                "cmp r11d, 0\n"
                 "jne .label_%d\n"
                 "jmp .label_%d\n",
         left == Char_v? 'b': 'd',
@@ -593,7 +593,7 @@ static type_v evalOr(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     if (right != Bool_v) fprintf(        // Cas expression non-booleenne
         f_nasm, "mov r11%c, [rsp]\n"
                 "add rsp, %d\n"
-                "cmp r11, 0\n"
+                "cmp r11d, 0\n"
                 "jne .label_%d\n"
                 "jmp .label_%d\n",
         left == Char_v? 'b': 'd',
@@ -742,7 +742,7 @@ static int evalWhile(Node* instr, Identifier* funct_id) {
     if (left != Bool_v) fprintf(        // Cas expression non-booleenne
         f_nasm, "mov r11%c, [rsp]\n"
                 "add rsp, %d\n"
-                "cmp r11, 0\n"
+                "cmp r11d, 0\n"
                 "jne .label_%d\n"
                 "jmp .label_%d\n",
         left == Char_v? 'b': 'd',
@@ -783,7 +783,7 @@ static int evalIf(Node* instr, Identifier* funct_id) {
     if (left != Bool_v) fprintf(        // Cas expression non-booleenne
         f_nasm, "mov r11%c, [rsp]\n"
                 "add rsp, %d\n"
-                "cmp r11, 0\n"
+                "cmp r11d, 0\n"
                 "jne .label_%d\n"
                 "jmp .label_%d\n",
         left == Char_v? 'b': 'd',
