@@ -6,36 +6,36 @@
 #define STATIC_VAR "STATIC_VAR"
 
 typedef enum {
-    Int_v,          // Type int
-    Char_v,         // Type char
-    Void_v,         // Type void
-    Bool_v,         // Type bool
-    None_v          // Probleme de typage
+    Int_v,                          // Type int
+    Char_v,                         // Type char
+    Void_v,                         // Type void
+    Bool_v,                         // Type bool
+    None_v                          // Probleme de typage
 } type_v;
 
 
 typedef struct idVariable {
-    char* id;
-    type_v type;
-    int is_static;
-    int is_used;
-    int is_init;
-    char* adress;
-    struct identifier* suiv;
-} IdVariable;
+    char* id;                       // L'identifiant de la variable
+    type_v type;                    // Le type de la variable
+    int is_static;                  // Si la variable est static
+    int is_used;                    // Si la variable est utilisee
+    int is_init;                    // Si la variable est initialisee
+    char* adress;                   // L'adresse relative de la variable
+    struct identifier* suiv;        // L'identifier suivant
+} IdVariable;                       // Identifier de variable
 
 
 typedef struct idFunction {
-    char* id;
-    type_v type;
-    int is_used;
-    struct table* local_var;
-    int nb_param;
-    struct identifier* param;
+    char* id;                       // L'identifiant de la fonction
+    type_v type;                    // Le type de retour de la fonction
+    int is_used;                    // Si la fonction est utilisee
+    struct table* local_var;        // La table de ses variables locales
+    int nb_param;                   // Le nombre de parametre
+    struct identifier* param;       // La liste chainee de ses paramtres
     int size_param;                 // Taille de la memoire dans la pile des parametres 7 et +
-    int size_alloc;
-    struct identifier* suiv;
-} IdFunction;
+    int size_alloc;                 // Taille d'allocation pour les variables locales
+    struct identifier* suiv;        // L'identifier suivant
+} IdFunction;                       // Identifier de fonction
 
 
 typedef enum {
@@ -45,32 +45,15 @@ typedef enum {
 
 
 typedef union data {
-    IdVariable var;
-    IdFunction func;
+    IdVariable var;                 // Identifier de variable
+    IdFunction func;                // Identifier de fonction
 } Data;
 
 
 typedef struct identifier {
-    IdType type;
-    Data data;
+    IdType type;                    // Type de l'identifier
+    Data data;                      // Donnee de l'identifier
 } Identifier;
-
-
-/**
- * Représente un identifiant de fonction ou de variable.
- 
-typedef struct temp{
-    char * id;                  // Nom de l'identifiant 
-    char * type;                // Type de l'identifiant 
-    int is_used;                // Si l'identifiant est utilise
-    int is_static;              // -> Variable: si elle est static ou non
-    char * adress;              // -> Variable: Adresse relative
-    struct temp * suiv;   // L'identifiant suivante (utilisée dans le cas d'une collision)
-    struct table* local_var;    // -> Fonction: Hash des variables locales
-    struct temp ** param; // -> Fonction: Liste des parametres de la fonction
-    int size_alloc;             // -> Fonction: La taille du bloc a allouer pour les locals
-} Temp;
-*/
 
 
 /**
@@ -91,9 +74,6 @@ typedef struct tableCeption {
     int size_alloc_var;             // Taille de la memoire a allouer pour les variables globales
     int size_static_var;            // Taille pour les statiques
 } TableCeption;
-
-
-char* convertTypeV(type_v type);
 
 
 /**

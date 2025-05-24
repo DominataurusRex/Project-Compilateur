@@ -7,24 +7,24 @@
 #include "tree.h"
 
 
-int yyparse(void);
-extern Node* root;
-extern FILE* yyin;
-extern TableCeption* table_ception;
-char* file_name;
-int nb_error = 0;
-int nb_warning = 0;
-int show_tree;
-int show_symtabs;
+int yyparse(void);                          // Fonction du parser
+extern Node* root;                          // Racine de l'arbre syntaxique
+extern FILE* yyin;                          // Stream du fichier d'entre
+extern TableCeption* table_ception;         // Tables des symboles
+char* file_name;                            // Nom du fichier d'entre
+int nb_error = 0;                           // Nombre d'erreur
+int nb_warning = 0;                         // Nombre de warning
+int show_tree;                              // Booleen pour afficher l'arbre
+int show_symtabs;                           // Booleen pour afficher les table des symboles
 
 static struct option long_options[] = {
     {"tree", no_argument, 0, 't'},
     {"help", no_argument, 0, 'h'},
     {"symtabs", no_argument, 0, 's'},
     {0, 0, 0, 0}
-};
+};                                          // Structure pour getopt
 
-const char *mess_help = 
+const char *mess_help =                     // Message d'aide
     "UTILISATION:\n" 
     "\t./tpcc [OPTIONS] < redirection entrée fichier .tpc\n"
     "\t./tpcc [OPTIONS] FILE.tpc\n"
@@ -44,9 +44,12 @@ const char *mess_help =
     "\t\tmémoire insuffisante...\n";
 
 
-    /**
-     * Permet de gerer les option avec getopt
-     */
+/**
+ * Permet de gerer les option avec getopt
+ * @param argc Le nombre d'argument
+ * @param argv La liste des arguments
+ * @return La continuation du programme ou non
+ */
 int getOption(int argc, char** argv) {
     int opt;
     int option_index;
@@ -76,13 +79,16 @@ int getOption(int argc, char** argv) {
 
 /**
  * Permet de recuperer un fichier donnee en argument de l'appel
+ * @param argc Le nombre d'argument
+ * @param argv La liste des arguments
+ * @return L'obtention du fichier ou non
  */
 int getFile(int argc, char** argv) {
     if (optind < argc) {
         yyin = fopen(argv[optind], "r");
         if (!yyin) {
             fprintf(stderr, "\033[31;1merror\033[0m file not found \033[1m‘%s’\033[0m\n", argv[optind]);
-            return 3;
+            return 1;
         }
         file_name = argv[optind];
     } else {

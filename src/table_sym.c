@@ -6,7 +6,12 @@
 #include "tree.h"
 
 
-char* convertTypeVChar(type_v type) {
+/**
+ * Convertit le type de type `type_v` en `char`
+ * @param type Le type
+ * @return Le type en char
+ */
+static char* convertTypeVChar(type_v type) {
     switch (type)
     {
     case Int_v: return "int";
@@ -17,7 +22,12 @@ char* convertTypeVChar(type_v type) {
 }
 
 
-type_v convertCharTypeV(char* type) {
+/**
+ * Convertit le type de type `char` en `type_v`
+ * @param type Le type
+ * @return Le type en `type_v`
+ */
+static type_v convertCharTypeV(char* type) {
     if (!strcmp(type, "int")) return Int_v;
     if (!strcmp(type, "char")) return Char_v;
     if (!strcmp(type, "void")) return Void_v;
@@ -25,27 +35,13 @@ type_v convertCharTypeV(char* type) {
 }
 
 
-Identifier* initVariable(char* ident, char* type, char* adress) {
-    Identifier* new = (Identifier*) malloc(sizeof(Identifier));
-    if (!new) exit(4);
-    new->type = VARIABLE;
-    new->data.var.id = ident;
-    new->data.var.type = convertCharTypeV(type);
-    new->data.var.is_static = 0;
-    new->data.var.is_used = 0;
-    new->data.var.is_init = 0;
-    if (strcmp(adress, "-")) {
-        new->data.var.adress = strdup(adress);
-        if (!new->data.var.adress) exit(4);
-    } else {
-        new->data.var.adress = NULL;
-    }
-    new->data.var.suiv = NULL;
-    return new;
-}
-
-
-Identifier* initFunction(char* ident, char* type) {
+/**
+ * Initialise un identifier de type fonction
+ * @param ident Le nom de la fonction
+ * @param type Le type de retour de la fonction
+ * @return L'adresse de l'identifier
+ */
+static Identifier* initFunction(char* ident, char* type) {
     Identifier* new = (Identifier*) malloc(sizeof(Identifier));
     if (!new) exit(4);
     new->type = FUNCTION;
@@ -66,7 +62,7 @@ Identifier* initFunction(char* ident, char* type) {
  * Peremt de libere la memoire allouee pour `var`.
  * @param var L'identifiant
  */
-void delIdentifier(Identifier* var) {
+static void delIdentifier(Identifier* var) {
     if (var == NULL) return;
     switch (var->type) {
         case FUNCTION:
@@ -89,7 +85,7 @@ void delIdentifier(Identifier* var) {
  * Initialise une structure `Table`.
  * @return L'adresse de la structure
  */
-Table* initTableHash(IdType type) {
+static Table* initTableHash(IdType type) {
     Table* new = (Table*) malloc(sizeof(Table));
     if (!new) exit(4);
     new->type = type;
@@ -105,7 +101,7 @@ Table* initTableHash(IdType type) {
  * @param ident L'id a hash
  * @return La valeur du hash
  */
-unsigned int functHash(char* ident) {
+static unsigned int functHash(char* ident) {
     int k = 613;
     int tmp = 0;
     for (int i = 0; ident[i] != '\0'; i++)
@@ -116,7 +112,12 @@ unsigned int functHash(char* ident) {
 }
 
 
-void showParam(Identifier* funct, int indent) {
+/**
+ * Permet d'afficher la table des symbole des parametres
+ * @param funct L'identifer a montrer
+ * @param indent La taille de l'indentation
+ */
+static void showParam(Identifier* funct, int indent) {
     fprintf(stdout, "\033[35m");
     for (int j = 0; j < indent; j++) {
         fprintf(stdout, "--------");
@@ -140,7 +141,7 @@ void showParam(Identifier* funct, int indent) {
  * @param table La table a afficher
  * @param indent Le nombre d'indentation pour l'affichage
  */
-void showTable(Table* table, int indent) {
+static void showTable(Table* table, int indent) {
     fprintf(stdout, "\033[3%dm", table->type == VARIABLE ? 2: 3);
     for (int j = 0; j < indent; j++) {
         fprintf(stdout, "--------");
@@ -183,6 +184,26 @@ void showTable(Table* table, int indent) {
         }
     }
     fprintf(stdout, "\033[0m");
+}
+
+
+Identifier* initVariable(char* ident, char* type, char* adress) {
+    Identifier* new = (Identifier*) malloc(sizeof(Identifier));
+    if (!new) exit(4);
+    new->type = VARIABLE;
+    new->data.var.id = ident;
+    new->data.var.type = convertCharTypeV(type);
+    new->data.var.is_static = 0;
+    new->data.var.is_used = 0;
+    new->data.var.is_init = 0;
+    if (strcmp(adress, "-")) {
+        new->data.var.adress = strdup(adress);
+        if (!new->data.var.adress) exit(4);
+    } else {
+        new->data.var.adress = NULL;
+    }
+    new->data.var.suiv = NULL;
+    return new;
 }
 
 

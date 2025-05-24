@@ -5,20 +5,24 @@
 #include "error.h"
 #include "implement.h"
 
-TableCeption* table_ception;
-extern Node* root;
-extern char* file_name;
-extern int nb_error;
-extern const char *ban_funct[];
-int main_flag;
+TableCeption* table_ception;            // Les tables des symboles
+extern Node* root;                      // La racine de l'arbre syntaxique
+extern char* file_name;                 // Le nom du fichier d'entre
+extern int nb_error;                    // Le nombre d'erreur
+extern const char *ban_funct[];         // Le nom des fonctions implementees
+int main_flag;                          // Presence du main dans le fichier
 
 
 
-
-
-
-
-int fillTableVariable(Table* table, Node* node, Identifier* lst_param, int nb_param) {
+/**
+ * Rempli `table` avec les declarations de variable locale dans une fonction ou globale dans le programme
+ * @param table La table des symboles a remplir
+ * @param node La racine contenant la declaration des variables
+ * @param lst_param La liste des parametres dans le cas d'une fonction, NULL si dans le programme
+ * @param nb_param Le nombre de parametres dans le cas d'une fonction, -1 si dans le programme
+ * @return La memoire a allouer pour stocker les variables
+ */
+static int fillTableVariable(Table* table, Node* node, Identifier* lst_param, int nb_param) {
     Node* start = node->firstChild;
     int is_new;
     int is_not_ban;
@@ -77,15 +81,21 @@ int fillTableVariable(Table* table, Node* node, Identifier* lst_param, int nb_pa
 }
 
 
-void getParamAdress(char adress[32], int param_val, char* param_type) {
+/**
+ * Permet de recuperer le bon registre pour stocker le `param_val`eme parametre
+ * @param adress Le registre dans lequel le stocker, si `param_val` > 6, renvoie `-`
+ * @param param_val Le numero du parametre
+ * @param param_type Le type du parametre `int`/`char`
+ */
+static void getParamAdress(char adress[8], int param_val, char* param_type) {
     switch (param_val)
     {
-        case 1: strncpy(adress, !strcmp(param_type, "int")? "edi": "dil", 31); break;   // rdi
-        case 2: strncpy(adress, !strcmp(param_type, "int")? "esi": "sil", 31); break;   // rsi
-        case 3: strncpy(adress, !strcmp(param_type, "int")? "edx": "dl", 31); break;    // rdx
-        case 4: strncpy(adress, !strcmp(param_type, "int")? "ecx": "cl", 31); break;    // rcx
-        case 5: strncpy(adress, !strcmp(param_type, "int")? "r8d": "r8b", 31); break;   // r8
-        case 6: strncpy(adress, !strcmp(param_type, "int")? "r9d": "r9b", 31); break;   // r9
+        case 1: strncpy(adress, !strcmp(param_type, "int")? "edi": "dil", 7); break;   // rdi
+        case 2: strncpy(adress, !strcmp(param_type, "int")? "esi": "sil", 7); break;   // rsi
+        case 3: strncpy(adress, !strcmp(param_type, "int")? "edx": "dl", 7); break;    // rdx
+        case 4: strncpy(adress, !strcmp(param_type, "int")? "ecx": "cl", 7); break;    // rcx
+        case 5: strncpy(adress, !strcmp(param_type, "int")? "r8d": "r8b", 7); break;   // r8
+        case 6: strncpy(adress, !strcmp(param_type, "int")? "r9d": "r9b", 7); break;   // r9
     
     default:
         sprintf(adress, "-");
@@ -93,14 +103,19 @@ void getParamAdress(char adress[32], int param_val, char* param_type) {
 }
 
 
-void parcourParamFunct(Identifier* funct, Node* node) {
+/**
+ * Parcour les parametres de la fonction `funct`
+ * @param funct L'identifier de la fonction
+ * @param node La racine des parametres
+ */
+static void parcourParamFunct(Identifier* funct, Node* node) {
     if (node->firstChild->label == Void) {
         funct->data.func.nb_param = 0;
         return;
     }
     int nb_param = 0;
     int size_pile = 0;      // Taille de la pile si parametre dans la pile
-    char adress[32];
+    char adress[8];
 
     Node* cursor = node;
     for (; cursor; cursor = cursor->nextSibling) {
@@ -139,7 +154,7 @@ void parcourParamFunct(Identifier* funct, Node* node) {
  * @param head La racine EnTeteFonct
  * @return L'adresse de `identifier` cree
  */
-Identifier* fillEnTeteFunct(Node* head) {
+static Identifier* fillEnTeteFunct(Node* head) {
     Identifier* new = NULL;
     Node* name = head->firstChild->firstChild->nextSibling;
     if (verifHashTable(table_ception->global_var, name->ident)) {
@@ -162,7 +177,10 @@ Identifier* fillEnTeteFunct(Node* head) {
 }
 
 
-void parcourFunction() {
+/**
+ * Parcour toute les declarations de fonction dans le fichier d'entre
+ */
+static void parcourFunction() {
     Node* start = root->firstChild;
     for (; start != NULL; start = start->nextSibling) {
         if (start->label == DeclFonct) {

@@ -1,0 +1,8 @@
+/*
+main signature
+*/
+
+
+char main(void) {
+    return 'c';
+}

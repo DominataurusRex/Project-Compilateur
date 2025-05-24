@@ -15,16 +15,27 @@ typedef enum {
 } BanFunct;
 
 
-
+/**
+ * Rajoute les fonctions implementees d'origine
+ */
 void addBanFunct();
 
 
+/**
+ * Verifie si le nom fait parti des fonctions implementees
+ */
 int verifBanDupli(char* name);
 
 
+/**
+ * Rajoute la fonction deja implementees dans les fonctions a ecrire
+ */
 void verifBanNeed(char* name);
 
 
+/**
+ * Ecrit les fonctions implementees necessaire au programme
+ */
 void writeBanFunct();
 
 

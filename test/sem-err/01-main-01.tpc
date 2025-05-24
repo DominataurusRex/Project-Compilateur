@@ -1,0 +1,8 @@
+/*
+no main
+*/
+
+
+int zemer(void) {
+    return 0;
+}

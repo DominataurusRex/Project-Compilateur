@@ -19,6 +19,7 @@ int nb_label = 0;                       // Nombre de label actuel
 // Bonus      -> parametre                              -> retour
 // r11 -> r10 -> (r9 -> r8 -> rcx -> rdx -> rsi -> rdi) -> rax
 
+
 /**
  * Fonction aiguillage des expressions
  * @param expr La racine de l'expression
@@ -50,6 +51,10 @@ static Precalc* initPrecalc() {
 }
 
 
+/**
+ * Renvoie une valeur de label unique
+ * @return Valeur du label
+ */
 static int newLabel(){
     nb_label++;
     return nb_label;
@@ -126,6 +131,10 @@ static type_v evalIdent(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
 static type_v evalFunct(Node* expr, Identifier* funct_id, Precalc* pre_calc, int is_expr) {
     if (pre_calc) pre_calc->abort = 1;
     Identifier* funct = verifHashTable(table_ception->global_funct, expr->ident);
+    if (verifHashTable(funct_id->data.func.local_var, expr->ident)) {
+        errorCalledNotFunction(expr);
+        return None_v;
+    }
     if (!funct) {
         errorImpliciteDecl(expr);
         return None_v;
@@ -187,7 +196,6 @@ static type_v evalFunct(Node* expr, Identifier* funct_id, Precalc* pre_calc, int
             }
             fprintf(f_nasm, "xor %s, %s\n", param_name, param_name);
         }
-        // printf("%s\n", funct->data.func.param[funct->data.func.nb_param - i - 1].data.var.id);
         fprintf(            // Mise en place des parametres dans les 6er registres
             f_nasm, "mov %s, [rsp]\nadd rsp, %d\n",
             funct->data.func.param[funct->data.func.nb_param - i - 1].data.var.adress,
@@ -199,8 +207,6 @@ static type_v evalFunct(Node* expr, Identifier* funct_id, Precalc* pre_calc, int
         funct->data.func.id,
         funct->data.func.size_param
     );
-
-
     if (last_save != -1) for (int i = last_save; i < funct_id->data.func.nb_param; i++) {
         fprintf(
             f_nasm, "mov %s, [rsp]\nadd rsp, %d\n",
@@ -208,8 +214,6 @@ static type_v evalFunct(Node* expr, Identifier* funct_id, Precalc* pre_calc, int
             funct_id->data.func.param[i].data.var.type == Char_v? 1: 4
         );
     }
-
-    
     if (is_expr && funct->data.func.type != Void_v) fprintf(        // Retour dans la pile
         f_nasm, "sub rsp, %d\nmov %s [rsp], %s\n",
         funct->data.func.type == Char_v? 1: 4,
@@ -235,7 +239,6 @@ static type_v evalNegate(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
     type_v right = evalExpr(expr->firstChild, funct_id, pre_calc);
     if (right == Void_v) errorIgnoredVoid(expr->firstChild);
     if (pre_calc && !pre_calc->abort) pre_calc->val = !pre_calc->val;
-
     if (right != Bool_v) fprintf(       // Cas expression non-boolenne
         f_nasm, "mov r11%c, [rsp]\n"
                 "add rsp, %d\n"
@@ -247,7 +250,6 @@ static type_v evalNegate(Node* expr, Identifier* funct_id, Precalc* pre_calc) {
         expr->true_l,
         expr->false_l
     );
-
     return Bool_v;
 }
 
@@ -709,8 +711,8 @@ static int evalReturn(Node* instr, Identifier* funct_id) {
             instr->firstChild->after_l
         );
     }
-    if (funct_id->data.func.type == Void_v && instr->firstChild) warningRetValVoid(instr);
-    if (funct_id->data.func.type != Void_v && !instr->firstChild) warningRetNoValNoVoid(instr);
+    if (funct_id->data.func.type == Void_v && instr->firstChild) errorRetValVoid(instr);
+    if (funct_id->data.func.type != Void_v && !instr->firstChild) errorRetNoValNoVoid(instr);
     if (funct_id->data.func.type == Char_v && (right == Int_v || right == Bool_v)) warningImpliciteConvert(instr, NULL);
     if (right == Void_v) errorIgnoredVoid(instr);
     if (right == Char_v) fprintf(f_nasm, "xor rax, rax\nmov al, [rsp]\nadd rsp, 1\n");
@@ -734,7 +736,6 @@ static int evalWhile(Node* instr, Identifier* funct_id) {
     int iftrue = newLabel();
     instr->firstChild->firstChild->true_l = iftrue;
     instr->firstChild->firstChild->false_l = instr->after_l;
-    //printf("%d %d %d\n", instr->true_l, instr->after_l, instr->false_l); 
     fprintf(f_nasm, ".label_%d:\n", begin);
     type_v left = evalExpr(instr->firstChild->firstChild, funct_id, NULL); //condition while
     if (left == Void_v) errorIgnoredVoid(instr->firstChild->firstChild);
@@ -832,6 +833,12 @@ static int evalInstr(Node* instr, Identifier* funct_id) {
 }
 
 
+/**
+ * Parcour chaque instruction du bloc d'instruction
+ * @param instr La node racine du bloc d'instruction
+ * @param funct_id L'identifier lie a la fonction en cours d'evaluation
+ * @return Le passage obligatoire par l'instruction `return` dans l'expression
+ */
 static int evalSuiteInstr(Node* instr, Identifier* funct_id) {
     Node* cursor = instr;
     int return_block = 0;
@@ -856,8 +863,9 @@ static void evalDeclFonct(Node* decl_funct) {
     fprintf(f_nasm, "mov rsp, rbp\npop rbp\nret\n");
 }
 
+
 void evalTpc() {
-    f_nasm = fopen("bin/_anonymous.asm", "w+");
+    f_nasm = fopen("_anonymous.asm", "w+");
     if (!f_nasm) exit(4);
     fprintf(f_nasm, "section .bss\n");
     if (table_ception->size_alloc_var) fprintf(f_nasm, "%s resb %d\n", GLOBAL_VAR, table_ception->size_alloc_var);
@@ -868,5 +876,5 @@ void evalTpc() {
     fprintf(f_nasm, "_start:\ncall f_main\nmov rdi, rax\nmov rax, 60\nsyscall\n");        // Recuperer et renvoyer la valeur de sortie du main
     writeBanFunct();
     fclose(f_nasm);
-    if (nb_error) remove("bin/_anonymous.asm");
+    if (nb_error) remove("_anonymous.asm");
 }

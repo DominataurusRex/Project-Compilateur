@@ -5,7 +5,15 @@
 
 
 /**
- * Message d'erreur pour l'utilisation d'un retour de fonction Void
+ * Message d'erreur pour l'appelle d'une fonction portant le meme nom qu'une variable locale.
+ * Incremente nb_error
+ * @param node La node problematique
+ */
+void errorCalledNotFunction(Node* node);
+
+
+/**
+ * Message d'erreur pour l'utilisation d'un retour de fonction Void.
  * Incremente nb_error
  * @param node La node problematique
  */
@@ -21,7 +29,7 @@ void errorImpliciteDecl(Node* node);
 
 
 /**
- * Message d'erreur pour l'absence de main dans le fichier
+ * Message d'erreur pour l'absence de main dans le fichier.
  * Incremente nb_error
  */
 void errorNotMain();
@@ -49,6 +57,22 @@ void errorRedefinitionBan(Node* node);
  * @param node La node problematique
  */
 void errorRedefinitionType(Node* node);
+
+
+/**
+ * Message d'erreur' d'un `return` de fonction non-void renvoyant un void.
+ * Incremente nb_error
+ * @param node La node problematique
+ */
+void errorRetNoValNoVoid(Node* node);
+
+
+/**
+ * Message d'erreur d'un `return` de fonction void renvoyant une valeur.
+ * Incremente nb_error
+ * @param node La node problematique
+ */
+void errorRetValVoid(Node* node);
 
 
 /**
@@ -101,26 +125,9 @@ void warningImpliciteConvert(Node* node, char* param);
 
 
 /**
- * @brief 
- * 
+ * Message d'avertissement de la declaration d'une fonction main avec argument.
  */
 void warningMain();
-
-
-/**
- * Message d'avertissement d'un `return` de fonction non-void renvoyant un void.
- * Incremente nb_warning
- * @param node La node problematique
- */
-void warningRetNoValNoVoid(Node* node);
-
-
-/**
- * Message d'avertissement d'un `return` de fonction void renvoyant une valeur.
- * Incremente nb_warning
- * @param node La node problematique
- */
-void warningRetValVoid(Node* node);
 
 
 /**

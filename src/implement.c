@@ -3,15 +3,15 @@
 #include <string.h>
 #include "implement.h"
 
-extern TableCeption* table_ception;
-extern FILE* f_nasm;
-static int funct_need = 0;
+extern TableCeption* table_ception;     // Les tables de symbole du programme
+extern FILE* f_nasm;                    // Le stream du fichier de destination
+static int funct_need = 0;              // Reserve des fonctions necessaire (utilisation du bit a bit)
 const char *ban_funct[] = {
     "putint",
     "getint",
     "putchar",
     "getchar"
-};
+};                                      // Liste des noms des fonctions implementees
 
 
 int verifBanDupli(char* name) {
@@ -64,6 +64,9 @@ void addBanFunct() {
 }
 
 
+/**
+ * Ecrit la version nasm de putint dans le fichier `f_nasm`
+ */
 static void writePutint() {
     fprintf(
         f_nasm, "f_putint:\n"
@@ -94,6 +97,9 @@ static void writePutint() {
 }
 
 
+/**
+ * Ecrit la version nasm de getint dans le fichier `f_nasm`
+ */
 static void writeGetint() {
     fprintf(
         f_nasm, "f_getint:\n"
@@ -130,6 +136,9 @@ static void writeGetint() {
 }
 
 
+/**
+ * Ecrit la version nasm de putchar dans le fichier `f_nasm`
+ */
 static void writePutchar() {
     fprintf(
         f_nasm, "f_putchar:\n"
@@ -150,6 +159,9 @@ static void writePutchar() {
 }
 
 
+/**
+ * Ecrit la version nasm de getchar dans le fichier `f_nasm`
+ */
 static void writeGetchar() {
     fprintf(
         f_nasm, "f_getchar:\n"

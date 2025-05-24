@@ -1,0 +1,15 @@
+/*
+var definition like function
+*/
+
+
+int hornet(void) {
+    return 0;
+}
+
+
+int main(void) {
+    char hornet;
+    hornet();
+    return 0;
+}

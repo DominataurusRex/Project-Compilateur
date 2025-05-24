@@ -1,9 +1,22 @@
 #include <stdio.h>
 #include "error.h"
 
-extern char* file_name;
-extern int nb_error;
-extern int nb_warning;
+extern char* file_name;     // Le nom du fichier
+extern int nb_error;        // Le nombre d'erreur
+extern int nb_warning;      // Le nombre de warning
+
+
+
+void errorCalledNotFunction(Node* node) {
+    fprintf(
+        stderr, "\033[1m%s:%d:%d:\033[31;1m error:\033[0m called object \033[0;1m‘%s’\033[0m is not a function\n\n",
+        file_name,
+        node->line,
+        node->column,
+        node->ident
+    );
+    nb_error++;
+}
 
 
 void errorIgnoredVoid(Node* node) {
@@ -21,14 +34,13 @@ void errorIgnoredVoid(Node* node) {
 void errorImpliciteDecl(Node* node) {
     fprintf(
         stderr,
-        "\033[1m%s:%d:%d:\033[35;1m ~error~ warning:\033[0m implicit declaration of function \033[1m‘%s’\033[0m\n\n",
+        "\033[1m%s:%d:%d:\033[31;1m error:\033[0m implicit declaration of function \033[1m‘%s’\033[0m\n\n",
         file_name,
         node->line,
         node->column,
         node->ident
     );
-    // nb_error++;
-    nb_warning++;
+    nb_error++;
 }
 
 void errorNotMain(){
@@ -38,15 +50,6 @@ void errorNotMain(){
         file_name
     );
     nb_error++;
-}
-
-void warningMain() {
-    fprintf(
-        stderr,
-        "\033[1m%s:\033[35;1mwarning:\033[0m \033[1m‘int main(...)’\033[0m function signature not found\n\n",
-        file_name
-    );
-    nb_warning++;
 }
 
 
@@ -84,6 +87,28 @@ void errorRedefinitionType(Node* node) {
         node->line,
         node->column,
         node->ident
+    );
+    nb_error++;
+}
+
+
+void errorRetNoValNoVoid(Node* node) {
+    fprintf(
+        stderr, "\033[1m%s:%d:%d:\033[31;1m error:\033[0;1m ‘return’\033[0m with no value, in function returning non-void\n\n",
+        file_name,
+        node->line,
+        node->column
+    );
+    nb_error++;
+}
+
+
+void errorRetValVoid(Node* node) {
+    fprintf(
+        stderr, "\033[1m%s:%d:%d:\033[31;1m error:\033[0;1m ‘return’\033[0m with a value, in function returning void\n\n",
+        file_name,
+        node->line,
+        node->column
     );
     nb_error++;
 }
@@ -169,23 +194,11 @@ void warningImpliciteConvert(Node* node, char* param) {
 }
 
 
-void warningRetNoValNoVoid(Node* node) {
+void warningMain() {
     fprintf(
-        stderr, "\033[1m%s:%d:%d:\033[35;1m warning:\033[0;1m ‘return’\033[0m with no value, in function returning non-void\n\n",
-        file_name,
-        node->line,
-        node->column
-    );
-    nb_warning++;
-}
-
-
-void warningRetValVoid(Node* node) {
-    fprintf(
-        stderr, "\033[1m%s:%d:%d:\033[35;1m warning:\033[0;1m ‘return’\033[0m with a value, in function returning void\n\n",
-        file_name,
-        node->line,
-        node->column
+        stderr,
+        "\033[1m%s:\033[35;1mwarning:\033[0m \033[1m‘main’\033[0m function not signature like \033[1m‘int main(void)’\033[0m\n\n",
+        file_name
     );
     nb_warning++;
 }
@@ -193,7 +206,7 @@ void warningRetValVoid(Node* node) {
 
 void warningUninitialized(Node* node) {
     fprintf(
-        stderr, "\033[1m%s:%d:%d:\033[35;1m warning: \033[0;1m‘%s’\033[0m is used uninitialized\n\n",
+        stderr, "\033[1m%s:%d:%d:\033[35;1m warning:\033[0;1m ‘%s’\033[0m is used uninitialized\n\n",
         file_name,
         node->line,
         node->column,
