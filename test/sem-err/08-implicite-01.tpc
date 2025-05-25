@@ -6,5 +6,6 @@ implicite declaration
 int main(void) {
     int bretta;
     bretta = zote(3);
+    putint(bretta);
     return 0;
 }

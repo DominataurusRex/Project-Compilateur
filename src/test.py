@@ -64,6 +64,7 @@ def main() -> int:
         print(f"\tEr. Autre      : {value[3]}")
         print(f"\tGen. Warning   : {value[4]}")
         print(f"\n\tSomme ---------> {sum(value[:4])}\n\n")
+    run("rm *.asm", shell=True, capture_output=True, check=False)
     return 0
 
 

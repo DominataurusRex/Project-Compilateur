@@ -11,5 +11,6 @@ void zote(int a, int b) {
 int main(void) {
     char vengefly_king;
     vengefly_king = zote(3, 4);
+    putchar(vengefly_king);
     return 0;
 }

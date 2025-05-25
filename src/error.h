@@ -100,7 +100,7 @@ void errorUndeclared(Node* node);
 
 
 /**
- * Message d'avertissement d'un bloc d'instruction de fonction non-void sans `return`
+ * Message d'avertissement d'un bloc d'instruction de fonction non-void sans `return`.
  * Incremente nb_warning
  * @param node La node problematique
  */
@@ -108,7 +108,7 @@ void warningControlReaches(Node* node);
 
 
 /**
- * Message d'avertissement d'une division par zero
+ * Message d'avertissement d'une division par zero.
  * Incremente nb_warning
  * @param node La node problematique
  */
@@ -136,6 +136,36 @@ void warningMain();
  * @param node La node problematique
  */
 void warningUninitialized(Node* node);
+
+
+/**
+ * Message d'avertissement de la declaration d'une fonction non utilisee.
+ * Incremente nb_warning
+ * @param name Le nom de la fonction
+ * @param line La ligne de la declaration
+ * @param column La colonne de la declaration
+ */
+void warningUnusedFunct(char* name, int line, int column);
+
+
+/**
+ * Message d'avertissement de la declaration et de l'affectation d'une variable non utilisee.
+ * Incremente nb_warning
+ * @param var Le nom de la varaible
+ * @param line La ligne de la declaration
+ * @param column La colonne de la declaration
+ */
+void warningUnusedSetVar(char* var, int line, int column);
+
+
+/**
+ * Message d'avertissement de la declaration d'une variable non utilisee.
+ * Incremente nb_warning
+ * @param var Le nom de la variable
+ * @param line La ligne de la declaration
+ * @param column La colonne de la declaration
+ */
+void warningUnusedVar(char* var, int line, int column);
 
 
 #endif

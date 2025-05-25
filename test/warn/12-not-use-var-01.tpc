@@ -1,0 +1,9 @@
+/*
+    variable not use/not use set
+*/
+
+int main(void) {
+    int oro, mato;
+    mato = 0;
+    return 0;
+}

@@ -20,6 +20,8 @@ typedef struct idVariable {
     int is_static;                  // Si la variable est static
     int is_used;                    // Si la variable est utilisee
     int is_init;                    // Si la variable est initialisee
+    int line;                       // Ligne de la declaration
+    int column;                     // Colonne de la declaration
     char* adress;                   // L'adresse relative de la variable
     struct identifier* suiv;        // L'identifier suivant
 } IdVariable;                       // Identifier de variable
@@ -29,6 +31,8 @@ typedef struct idFunction {
     char* id;                       // L'identifiant de la fonction
     type_v type;                    // Le type de retour de la fonction
     int is_used;                    // Si la fonction est utilisee
+    int line;                       // Ligne de la declaration
+    int column;                     // Colonne de la declaration
     struct table* local_var;        // La table de ses variables locales
     int nb_param;                   // Le nombre de parametre
     struct identifier* param;       // La liste chainee de ses paramtres
@@ -112,9 +116,13 @@ void deleteTableCeption(TableCeption* table_ception);
  * @param table_var La table des symboles  de variable
  * @param ident L'id de la variable
  * @param type Le type de la variable
- * @param info Si la variable est static (0/1)
+ * @param adress L'adresse de la variable
+ * @param is_static Si la variable est static
+ * @param line La ligne de la declaration
+ * @param column La colnne de la declaration
+ * @return L'adresse de la nouvelle variable
  */
-Identifier* addHashVar(Table* table_var, char* ident, char* type, char* adress, int is_static);
+Identifier* addHashVar(Table* table_var, char* ident, char* type, char* adress, int is_static, int line, int column);
 
 
 /**
@@ -122,8 +130,11 @@ Identifier* addHashVar(Table* table_var, char* ident, char* type, char* adress, 
  * @param table_funct La table des symboles de fonction
  * @param ident L'id de la fonction
  * @param type Le type de la fonction
+ * @param line La ligne de la declaration
+ * @param column La colonne de la declaration
+ * @return L'adresse de la nouvelle fonction
  */
-Identifier* addHashFunct(Table* table_funct, char* ident, char* type);
+Identifier* addHashFunct(Table* table_funct, char* ident, char* type, int line, int column);
 
 
 /**
@@ -159,5 +170,8 @@ Identifier* verifHashFunct(Table* global_var, Identifier* funct, char* ident);
  * @param table_ception La structure `TableCeptin`
  */
 void showCeption(TableCeption* table_ception);
+
+
+void genWarningNotUse(TableCeption* table_ception);
 
 #endif

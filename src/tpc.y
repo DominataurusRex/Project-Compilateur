@@ -9,7 +9,7 @@ int yylex();
 void yyerror(char *);
 Node* root = NULL;
 extern char *yytext;
-extern char* file_name;
+extern char* file_path;
 extern int nb_error;
 Node* tree;
 %}
@@ -339,7 +339,7 @@ void yyerror(char* msg) {
     fprintf(
         stderr,
         "\033[1m%s:%d:%d: \033[31;1merror:\033[0m %s \033[1m‘%s’\033[0m\n",
-        file_name,
+        file_path,
         yylloc.first_line,
         yylloc.first_column,
         msg,

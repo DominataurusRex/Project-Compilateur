@@ -7,7 +7,6 @@
 
 TableCeption* table_ception;            // Les tables des symboles
 extern Node* root;                      // La racine de l'arbre syntaxique
-extern char* file_name;                 // Le nom du fichier d'entre
 extern int nb_error;                    // Le nombre d'erreur
 extern const char *ban_funct[];         // Le nom des fonctions implementees
 int main_flag;                          // Presence du main dans le fichier
@@ -57,18 +56,18 @@ static int fillTableVariable(Table* table, Node* node, Identifier* lst_param, in
                     if (is_new && is_not_ban) {
                         if (nb_param == -1) {
                             sprintf(buff, "[%s+%d]", GLOBAL_VAR, toto_mem);
-                            addHashVar(table, cursor->ident, start->ident, buff, start->label == StaticType);
+                            addHashVar(table, cursor->ident, start->ident, buff, 0, cursor->line, cursor->column);
                             toto_mem += !strcmp(start->ident, "int")? 4: 1;
                         } else {
                             if (start->label == StaticType){ //je respecte le travail de Paul
                                 sprintf(buff, "[%s+%d]", STATIC_VAR, table_ception->size_static_var);
-                                Identifier* tmp = addHashVar(table, cursor->ident, start->ident, buff, 1);
+                                Identifier* tmp = addHashVar(table, cursor->ident, start->ident, buff, 1, cursor->line, cursor->column);
                                 tmp->data.var.is_init = 1;
                                 table_ception->size_static_var += !strcmp(start->ident, "int")? 4: 1;
                             } else {
                                 toto_mem += !strcmp(start->ident, "int")? 4: 1;
                                 sprintf(buff, "[rbp-%d]", toto_mem);
-                                addHashVar(table, cursor->ident, start->ident, buff, 0);
+                                addHashVar(table, cursor->ident, start->ident, buff, 0, cursor->line, cursor->column);
                             }
                         }
                     }
@@ -164,12 +163,19 @@ static Identifier* fillEnTeteFunct(Node* head) {
         // Present dans global_funct
         errorRedefinition(name);
     } else {
-        new = addHashFunct(table_ception->global_funct, name->ident, head->firstChild->firstChild->label == Void? "void": head->firstChild->firstChild->ident);
+        new = addHashFunct(
+            table_ception->global_funct,
+            name->ident,
+            head->firstChild->firstChild->label == Void? "void": head->firstChild->firstChild->ident,
+            name->line,
+            name->column
+        );
         if (verifBanDupli(name->ident)) errorRedefinitionBan(name);
         // Verification signature int main(...)
         if (!strcmp(name->ident, "main")) {
             if (head->firstChild->firstChild->nextSibling->nextSibling->firstChild->label != Void) warningMain();
             if (head->firstChild->firstChild->label != Void && !strcmp(head->firstChild->firstChild->ident, "int")) main_flag = 1;
+            new->data.func.is_used = 1;
         }
         parcourParamFunct(new, name->nextSibling);
     }

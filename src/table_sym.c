@@ -2,8 +2,11 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include "error.h"
 #include "table_sym.h"
-#include "tree.h"
+
+
+extern char* file_path;                 // Nom du fichier tpc
 
 
 /**
@@ -67,6 +70,10 @@ static void delIdentifier(Identifier* var) {
     switch (var->type) {
         case FUNCTION:
             if (var->data.func.local_var != NULL) deleteTable(var->data.func.local_var);
+            for (int i = 0; i < var->data.func.nb_param; i++) {
+                free(var->data.func.param[i].data.var.adress);
+                var->data.func.param[i].data.var.adress = NULL;
+            }
             free(var->data.func.param);
             var->data.func.param = NULL;
             delIdentifier(var->data.func.suiv);
@@ -235,22 +242,26 @@ void deleteTableCeption(TableCeption* table_ception) {
 }
 
 
-Identifier* addHashVar(Table* table_var, char* ident, char* type, char* adress, int is_static) {
+Identifier* addHashVar(Table* table_var, char* ident, char* type, char* adress, int is_static, int line, int column) {
     int hash = functHash(ident);
     Identifier* new = initVariable(ident, type, adress);
     new->data.var.is_static = is_static;
     new->data.var.suiv = table_var->lst_tab[hash];
     table_var->lst_tab[hash] = new;
+    new->data.var.line = line;
+    new->data.var.column = column;
     return new;
 }
 
 
-Identifier* addHashFunct(Table* table_funct, char* ident, char* type) {
+Identifier* addHashFunct(Table* table_funct, char* ident, char* type, int line, int column) {
     int hash = functHash(ident);
     Identifier* new = initFunction(ident, type);
     new->data.func.suiv = table_funct->lst_tab[hash];
     table_funct->lst_tab[hash] = new;
     new->data.func.local_var = initTableHash(VARIABLE);
+    new->data.func.line = line;
+    new->data.func.column = column;
     return new;
 }
 
@@ -296,4 +307,39 @@ void showCeption(TableCeption* table_ception) {
     showTable(table_ception->global_var, 0);
     fprintf(stdout, "\n");
     showTable(table_ception->global_funct, 0);
+}
+
+
+static int genWarningNotUseFunct(Table* table, char* name, int is_scan) {
+    int toto = 0;
+    for (int i = 0; i < TAILLE; i++) {
+        for (Identifier* temp = table->lst_tab[i]; temp; temp = temp->data.var.suiv) {
+            if (!temp->data.var.is_used) {
+                toto++;
+                if (!is_scan) {
+                    if (temp->data.var.is_init) warningUnusedSetVar(temp->data.var.id, temp->data.var.line, temp->data.var.column);
+                    else warningUnusedVar(temp->data.var.id, temp->data.var.line, temp->data.var.column);
+                }
+            }
+        }
+    }
+    return toto;
+}
+
+
+void genWarningNotUse(TableCeption* table_ception) {
+    for (int i = 0; i < TAILLE; i++) {
+        for (Identifier* temp = table_ception->global_funct->lst_tab[i]; temp; temp = temp->data.func.suiv) {
+            if (genWarningNotUseFunct(temp->data.func.local_var, temp->data.func.id, 1)) {
+                fprintf(
+                    stderr, "\033[1m%s:\033[35;1m warning:\033[0m In function \033[1m‘%s’\033:\n",
+                    file_path,
+                    temp->data.func.id
+                );
+                genWarningNotUseFunct(temp->data.func.local_var, temp->data.func.id, 0);
+                fprintf(stderr, "\n");
+            }
+            if (!temp->data.func.is_used) warningUnusedFunct(temp->data.func.id, temp->data.func.line, temp->data.func.column);
+        }
+    }
 }

@@ -11,5 +11,6 @@ int zote(int a, int b) {
 int main(void) {
     int vengefly_king;
     vengefly_king = zote(3);
+    putint(vengefly_king);
     return 0;
 }

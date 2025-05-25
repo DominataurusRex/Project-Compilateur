@@ -10,6 +10,8 @@ int hornet(void) {
 
 int main(void) {
     char hornet;
+    hornet = 's';
+    putchar(hornet);
     hornet();
     return 0;
 }

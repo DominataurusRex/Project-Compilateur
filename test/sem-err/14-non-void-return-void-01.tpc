@@ -1,0 +1,14 @@
+/*
+non-void function return void
+*/
+
+
+int tiso(void) {
+    return;
+}
+
+
+int main(void) {
+    tiso();
+    return 0;
+}

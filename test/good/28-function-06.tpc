@@ -21,8 +21,8 @@ int isOdd(int dimentio) {
 
 int main(void) {
     putint(isEven(33));
-    putint(isEven(-34));
+    putint(isEven(34));
     putint(isOdd(33));
-    putint(isOdd(-34));
+    putint(isOdd(34));
     return 0;
 }

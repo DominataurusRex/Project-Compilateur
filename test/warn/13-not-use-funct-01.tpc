@@ -1,0 +1,13 @@
+/*
+    variable not use/not use set
+*/
+
+
+int sheo(void) {
+    return 0;
+}
+
+
+int main(void) {
+    return 0;
+}

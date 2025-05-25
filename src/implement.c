@@ -36,31 +36,35 @@ void verifBanNeed(char* name) {
 
 void addBanFunct() {
     Identifier* new, * var_temp;
-    new = addHashFunct(table_ception->global_funct, "putint", "void");
+    new = addHashFunct(table_ception->global_funct, "putint", "void", -1, -1);
     new->data.func.param = (Identifier*) malloc(sizeof(Identifier));
     if (!new->data.func.param) exit(4);
     var_temp = initVariable("value", "int", "edi");
     new->data.func.param[0] = *var_temp;
     new->data.func.nb_param = 1;
+    new->data.func.is_used = 1;
     free(var_temp);
     
-    new = addHashFunct(table_ception->global_funct, "putchar", "void");
+    new = addHashFunct(table_ception->global_funct, "putchar", "void", -1, -1);
     new->data.func.param = (Identifier*) malloc(sizeof(Identifier));
     if (!new->data.func.param) exit(4);
     var_temp = initVariable("value", "char", "dil");
     new->data.func.param[0] = *var_temp;
     new->data.func.nb_param = 1;
+    new->data.func.is_used = 1;
     free(var_temp);
     
-    new = addHashFunct(table_ception->global_funct, "getint", "int");
+    new = addHashFunct(table_ception->global_funct, "getint", "int", -1, -1);
     new->data.func.param = (Identifier*) malloc(sizeof(Identifier) * 0);
     if (!new->data.func.param) exit(4);
     new->data.func.nb_param = 0;
+    new->data.func.is_used = 1;
     
-    new = addHashFunct(table_ception->global_funct, "getchar", "char");
+    new = addHashFunct(table_ception->global_funct, "getchar", "char", -1, -1);
     new->data.func.param = (Identifier*) malloc(sizeof(Identifier) * 0);
     if (!new->data.func.param) exit(4);
     new->data.func.nb_param = 0;
+    new->data.func.is_used = 1;
 }
 
 

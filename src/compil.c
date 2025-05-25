@@ -7,7 +7,7 @@
 
 extern Node* root;                      // La racine de l'arbre tpc
 extern TableCeption* table_ception;     // Table des symboles
-extern char* file_name;                 // Nom du fichier tpc
+extern char* file_path;                 // Nom du fichier tpc
 extern int nb_error;                    // Nombre d'erreur
 extern int start_flag;                  // Presence d'un main
 FILE* f_nasm;                           // Fichier sortie nasm
@@ -140,6 +140,7 @@ static type_v evalFunct(Node* expr, Identifier* funct_id, Precalc* pre_calc, int
         return None_v;
     }
     verifBanNeed(expr->ident);
+    funct->data.func.is_used = 1;
     int last_save = -1;
     for (int i = 0; i < funct_id->data.func.nb_param && i < 6 && i < funct->data.func.nb_param; i++) {
         fprintf(            // Sauvegarde des anciens registre de parametre
@@ -220,7 +221,6 @@ static type_v evalFunct(Node* expr, Identifier* funct_id, Precalc* pre_calc, int
         funct->data.func.type == Char_v? "byte": "dword",
         funct->data.func.type == Char_v? "al": "eax"
     );
-    funct->data.func.is_used = 1;
     return funct->data.func.type;
 }
 
@@ -865,7 +865,16 @@ static void evalDeclFonct(Node* decl_funct) {
 
 
 void evalTpc() {
-    f_nasm = fopen("_anonymous.asm", "w+");
+    char* temp = strrchr(file_path, '/');
+    char* file_name;
+    if (!temp) {
+        file_name = "_anonymous.asm";
+    } else {
+        file_name = strdup(temp + 1);
+        char* extension = strrchr(file_name, '.');
+        strcpy(extension + 1, "asm");
+    }
+    f_nasm = fopen(file_name, "w+");
     if (!f_nasm) exit(4);
     fprintf(f_nasm, "section .bss\n");
     if (table_ception->size_alloc_var) fprintf(f_nasm, "%s resb %d\n", GLOBAL_VAR, table_ception->size_alloc_var);
@@ -876,5 +885,7 @@ void evalTpc() {
     fprintf(f_nasm, "_start:\ncall f_main\nmov rdi, rax\nmov rax, 60\nsyscall\n");        // Recuperer et renvoyer la valeur de sortie du main
     writeBanFunct();
     fclose(f_nasm);
-    if (nb_error) remove("_anonymous.asm");
+    if (nb_error) remove(file_name);
+    if (temp) free(file_name);
+    genWarningNotUse(table_ception);
 }

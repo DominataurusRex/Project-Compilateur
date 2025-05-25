@@ -1,6 +1,7 @@
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <getopt.h>
+#include <string.h>
 #include "compil.h"
 #include "parcour_tree.h"
 #include "table_sym.h"
@@ -11,7 +12,7 @@ int yyparse(void);                          // Fonction du parser
 extern Node* root;                          // Racine de l'arbre syntaxique
 extern FILE* yyin;                          // Stream du fichier d'entre
 extern TableCeption* table_ception;         // Tables des symboles
-char* file_name;                            // Nom du fichier d'entre
+char* file_path;                            // Nom du fichier d'entre
 int nb_error = 0;                           // Nombre d'erreur
 int nb_warning = 0;                         // Nombre de warning
 int show_tree;                              // Booleen pour afficher l'arbre
@@ -85,14 +86,22 @@ int getOption(int argc, char** argv) {
  */
 int getFile(int argc, char** argv) {
     if (optind < argc) {
+        char *extension = strrchr(argv[optind], '.');
+        if (strcmp(extension + 1, "tpc")) {
+            fprintf(
+                stderr, "\033[31;1merror\033[0m The file format\033[1m‘%s’\033[0m is not recognized as a \033[1m‘.tpc’\033[0m file\n",
+                extension
+            );
+            return 1;
+        }
         yyin = fopen(argv[optind], "r");
         if (!yyin) {
             fprintf(stderr, "\033[31;1merror\033[0m file not found \033[1m‘%s’\033[0m\n", argv[optind]);
             return 1;
         }
-        file_name = argv[optind];
+        file_path = argv[optind];
     } else {
-        file_name = "_anonymous.tpc";
+        file_path = "_anonymous.tpc";
     }
     return 0;
 }
