@@ -1,5 +1,4 @@
-# Project-Compilation
+# Project Analyse Syntaxique
 Projet S5
 
-Semestre 1 -> projet d'analyse syntaxique
-Semestre 2 -> projet de compilation basé sur l'analyse syntaxique
+Projet durant le semestre 1
